@@ -1,0 +1,7 @@
+const thisIdentifierIsWayTooLong = 123456; /* comment with + - := and weird stuff @@@ */
+var x, y;
+begin
+  x := 12;
+  y := x + 1;
+  z$ := 3;
+end.
