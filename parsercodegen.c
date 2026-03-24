@@ -1,26 +1,24 @@
-
 /*
 Assignment:
-lex - Lexical Analyzer for PL/0
-Author: Nicole Baez Espinosa, Lianet Martin
-Language: C(only)
+HW3 - Parser and Code Generator for PL/0
+Author(s): Nicole Baez Espinosa, Lianet Martin
+Language: C (only)
 To Compile:
-gcc -O2 -std=c11 -o lex lex.c
+gcc -O2 -Wall -std=c11 -o parsercodegen parsercodegen.c
 To Execute (on Eustis):
-./lex <input file>
+./parsercodegen <input_file.txt>
 where:
-<input file> is the path to the PL/0 source program
+<input_file.txt> is the path to the PL/0 source program
 Notes:
-- Implement a lexical analyser for the PL/0 language.
-- The program must detect errors such as
-- numbers longer than five digits
-- identifiers longer than eleven characters
-- invalid characters.
-- The output format must exactly match the specification.
-- Tested on Eustis.
-Class: COP 3402 - System Software - Spring 2026
+- Single integrated program: scanner + parser + code gen
+- parsercodegen.c accepts ONE command-line argument
+- Scanner runs internally (no intermediate token file)
+- Implements recursive-descent parser for PL/0 grammar
+- Generates PM/0 assembly code (see Appendix A for ISA)
+- All development and testing performed on Eustis
+Class: COP 3402 - Systems Software - Spring 2026
 Instructor: Dr. Jie Lin
-Due Date: Monday, March 3, 2026
+Due Date: See Webcourses for the posted due date and time.
 */
 
 // Structure for enumeration
