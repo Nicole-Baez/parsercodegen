@@ -1,8 +1,8 @@
 # AI Usage Disclosure Details
 
-**Student Name:** [NAME]
-**Student ID:** [Your Student ID]
-**Assignment:** [Assignment Name/Number]
+**Student Name:** Nicole Baez Espinosa
+**Student ID:** 5544379
+**Assignment:** Homework 3
 
 ---
 
@@ -18,34 +18,92 @@ order, with each round listing the prompt, AI output, and verification/edits.
 
 ### Tool Name
 
-[e.g., ChatGPT, Claude, GitHub Copilot, Gemini, Perplexity, etc.]
+Claude
 
 ### Version/Model
 
-[e.g., GPT-4, GPT-4 Turbo, GPT-5, Claude Sonnet 3.5, Claude 4, GitHub Copilot
-(GPT-4), etc.]
+Sonnet 4.6
 
 ### Date(s) Used
 
-[e.g., January 15, 2025; January 18, 2025; January 20, 2025]
+March 24th, 2026
 
 ### Specific Parts of Assignment
 
-[Describe exactly which portions of your work involved AI assistance]
-[e.g., Code debugging for functions calculateHash() and validateInput(); Literature
-review for Section 2.3; Writing assistance for conclusion paragraph; Algorithm
-optimization for sorting function]
+Used for understanding parser logic and debugging grammar function. 
 
 ### Conversation Log
 
-[Use one block per round. Add more rounds as needed.]
+
 
 #### Round 1
 
-**Prompt:** [Exact prompt/question]
-**AI Output:** [Summarize or paste the output]
-**Verification/Edits:** [How you verified accuracy or modified the output]
-
+**Prompt:** CONST-DECLARATION
+if token == const
+do
+get next token
+if token != identsym
+error
+if SYMBOLTABLECHECK (token) != -1
+error
+save ident name
+get next token
+if token != eqlsym
+error
+get next token
+if token != numbersym
+error
+add to symbol table (kind 1, saved name, number, 0, 0)
+get next token
+while token == commasym
+if token != semicolonsym
+error
+get next token (how would i save the identifier name? I only have the list of tokens and a separate name table, how can I map them?)
+**AI Output:** Since your token list stores the name table index right after identsym, you can use that index to look up the name in the name table. So when you see identsym in the token list, the very next entry is the index into nameTable:
+cif (token == identsym)
+{
+    int nameIndex = tokenList[++currentToken]; // grab the name table index
+    char *identName = nameTable[nameIndex];    // look up the actual name
+    // save identName for the symbol table
+}
+So your const declaration parser would look something like:
+cvoid constDeclaration()
+{
+    if (tokenList[currentToken] == constsym)
+    {
+        do
+        {
+            currentToken++;
+            if (tokenList[currentToken] != identsym)
+                error("Expected identifier");
+            
+            int nameIndex = tokenList[++currentToken]; // get name table index
+            char *savedName = nameTable[nameIndex];    // save the name
+            
+            currentToken++;
+            if (tokenList[currentToken] != eqsym)
+                error("Expected =");
+            
+            currentToken++;
+            if (tokenList[currentToken] != numbersym)
+                error("Expected number");
+            
+            int value = tokenList[++currentToken];     // number value is also stored inline
+            
+            addToSymbolTable(1, savedName, value, 0, 0);
+            
+            currentToken++;
+        } 
+        while (tokenList[currentToken] == commasym);
+        
+        if (tokenList[currentToken] != semicolonsym)
+            error("Expected semicolon");
+        
+        currentToken++;
+    }
+}
+The key insight is that your token list is essentially a flat array where identsym is always followed by its name table index, and numbersym is always followed by its value — so you just need to increment currentToken an extra time to grab the associated data whenever you encounter either of those tokens.
+**Verification/Edits:** Claude helped me realize that the name table index is already stored in the token list. I will now do a linear search on the name table as well whenever I have to save the identifier name. 
 #### Round 2
 
 **Prompt:** [Exact prompt/question]

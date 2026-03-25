@@ -21,6 +21,15 @@ Instructor: Dr. Jie Lin
 Due Date: See Webcourses for the posted due date and time.
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define norw 15                   // num of reserved words
+#define idenmax 11                // identifier length
+#define strmax 256                // str max length
+#define MAX_SYMBOL_TABLE_SIZE 500 // table size
+
 // Structure for enumeration
 typedef enum
 {
@@ -70,14 +79,8 @@ typedef struct
     int mark;      // to indicate unavailable or deleted
 } symbol;
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define norw 15                   // num of reserved words
-#define idenmax 11                // identifier length
-#define strmax 256                // str max length
-#define MAX_SYMBOL_TABLE_SIZE 500 // table size
+// Global symbol table
+symbol symbolTable[MAX_SYMBOL_TABLE_SIZE];
 
 // This function maps the reserved word
 TokenType mapReservedWordAndIdentifier(char *str)
@@ -302,6 +305,10 @@ TokenType reservedOrIdentifier(char buffer[], int bufferLength, char *reservedWo
 // Token list is global and can be accessed by the main function
 int tokenList[strmax + 1] = {0}; // to store all the tokens
 int tokenCount = 0;              // Counter to keep track of the token list
+int tokenCounter = 0;
+char *nameTable[strmax + 1] = {""}; // Array to store the name table
+int nameTableLength = 0;
+int symbolTableCounter = 0;
 
 // Function that checks for escape sequences (Scanner was turned into an internal module)
 void scanner(FILE *ip)
@@ -316,9 +323,6 @@ void scanner(FILE *ip)
     // Array to store the lexemes (for printing purposes)
     char *lexemes[strmax + 1] = {""};
 
-    // Array to store the name table
-    char *nameTable[strmax + 1] = {""};
-
     // Array for Error Messages
     char *errorMessages[] = {"Identifier too long", "Number too long", "Invalid symbol"};
 
@@ -330,10 +334,9 @@ void scanner(FILE *ip)
 
     printf("Source Program:\n\n");
 
-    int i = 0;               // Counter to keep track of the buffer
-    int lexLength = 0;       // Counter to keep track of the lexemes array
-    int nameTableLength = 0; // Counter to keep track of the name table
-    int errorMesNum = 0;     // Counter to keep track of the error messages throughout the code
+    int i = 0;           // Counter to keep track of the buffer
+    int lexLength = 0;   // Counter to keep track of the lexemes array
+    int errorMesNum = 0; // Counter to keep track of the error messages throughout the code
 
     // While true
     while (1)
@@ -705,23 +708,100 @@ void scanner(FILE *ip)
 void program()
 {
     int tokenCount = 0; // iterates through token list
-    while (tokenList[tokenCount] < tokenCount + 1)
-    {
-        // creo que esto es lo que lleva el block
-    }
+
+    // call block
 
     if (tokenList[tokenCount] != periodsym)
     {
         printf("Error: program must end with period");
     }
 
-    // emit halt
+    // emit halt, print
 }
 
 // symbol table check
+int symbolTableCheck(char identName[12])
+{
+    int index = 0;
+
+    for (int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+    {
+        if (strcmp(identName, symbolTable[i].name) == 0)
+        {
+            index = i;
+        }
+    }
+
+    // index not found
+    return -1;
+}
+
+// insert to symbol table
+void insertSymbolTable(int kind, char name[12], int val, int level, int address, int mark)
+{
+
+    symbolTable[symbolTableCounter].kind = kind;
+    strcpy(symbolTable[symbolTableCounter].name, name);
+    symbolTable[symbolTableCounter].val = val;
+    symbolTable[symbolTableCounter].addr = address;
+    symbolTable[symbolTableCounter].mark = mark;
+}
+
+// mark for symbol table
+
 // block
+
 // const-declatation
+void const_declaration()
+{
+    char identName[12];
+    tokenCounter++;
+    if (tokenList[tokenCounter] != identsym)
+    {
+        // ERROR
+    }
+    if (symbolTableCheck(nameTable[tokenList[tokenCounter++]]) != -1)
+    {
+        // ERROR
+    }
+}
+
 // var-declaration
+int varDeclaration()
+{
+    int numVars = 0;
+
+    do
+    {
+        tokenCounter++;
+        if (tokenList[tokenCounter] != identsym)
+        {
+            printf("Error: const, var, and read keywords must be followed by identifier");
+            // write to output file
+        }
+
+        if (symbolTableCheck(nameTable[tokenList[tokenCounter++]]) != -1)
+        {
+            printf("Error: symbol name has already been declared");
+        }
+
+        // add to symbol table
+        insertSymbolTable(2, nameTable[tokenList[tokenCounter++]], 0, 0, numVars + 3, 0);
+
+        numVars++;
+        tokenCounter++;
+
+    } while (tokenList[tokenCounter] == commasym);
+
+    if (tokenList[tokenCount] != semicolonsym)
+    {
+        printf("Error: constant and variable declarations must be followed by a semicolon");
+        // write message to output file
+    }
+
+    tokenCounter++;
+    return numVars;
+}
 // statement
 // condition
 // expression
