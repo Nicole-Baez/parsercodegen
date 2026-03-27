@@ -929,24 +929,38 @@ void getNextToken()
 // condition
 void condition()
 {
-
-    EXPRESSION
-    if token
-        == eqlsym get next token EXPRESSION emit EQL else if token == neqsym get next token EXPRESSION emit NEQ else if token == lessym get next token EXPRESSION emit LSS else if token == leqsym get next token EXPRESSION emit LEQ else if token == gtrsym get next token EXPRESSION emit GTR else if token == geqsym get next token EXPRESSION emit GEQ else error
+    /*termino manana*/
 }
 
 // expression
 void expression()
 {
-    TERM while token == plussym || token == minussym if token == plussym get next token TERM emit ADD else get next token TERM emit SUB
+    /*termino manana*/
 }
 
 // term
 void term()
 {
-    TERM
-                FACTOR while token == multsym ||
-        token == slashsym if token == multsym get next token FACTOR emit MUL else get next token FACTOR emit DIV
+    factor();
+
+    while (tokenList[tokenCounter] == multsym || tokenList[tokenCounter] == slashsym)
+    {
+
+        if (tokenList[tokenCounter] == multsym)
+        {
+
+            getNextToken();
+            factor();
+            emit("MUL", 2, 0, 4);
+        }
+        else
+        {
+
+            getNextToken();
+            factor();
+            emit("DIV", 2, 0, 5);
+        }
+    }
 }
 
 // factor
