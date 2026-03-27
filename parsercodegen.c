@@ -828,6 +828,7 @@ void constDeclaration()
                 printf("constants must be assigned an integer value");
             }
 
+            // add to symbol table
             insertSymbolTable(1, identName, tokenList[tokenCounter + 1], 0, 0, 0);
             getNextToken();
 
@@ -926,9 +927,86 @@ void getNextToken()
 }
 
 // condition
+void condition()
+{
+
+    EXPRESSION
+    if token
+        == eqlsym get next token EXPRESSION emit EQL else if token == neqsym get next token EXPRESSION emit NEQ else if token == lessym get next token EXPRESSION emit LSS else if token == leqsym get next token EXPRESSION emit LEQ else if token == gtrsym get next token EXPRESSION emit GTR else if token == geqsym get next token EXPRESSION emit GEQ else error
+}
+
 // expression
+void expression()
+{
+    TERM while token == plussym || token == minussym if token == plussym get next token TERM emit ADD else get next token TERM emit SUB
+}
+
 // term
+void term()
+{
+    TERM
+                FACTOR while token == multsym ||
+        token == slashsym if token == multsym get next token FACTOR emit MUL else get next token FACTOR emit DIV
+}
+
 // factor
+void factor()
+{
+
+    int symIdx;
+
+    // if identifier check if it was declared
+    if (tokenList[tokenCounter] == identsym)
+    {
+
+        symIdx = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
+
+        if (symIdx == -1)
+        {
+
+            printf("undeclared identifier");
+            return;
+        }
+        // if it is a constant give instruction LIT
+        if (symbolTable[symIdx].kind == 1)
+        {
+
+            emit("LIT", 1, 0, symbolTable[symIdx].val);
+        }
+        else
+        {
+
+            // if variable Load it
+            emit("LOD", 3, 0, symbolTable[symIdx].addr);
+        }
+
+        getNextToken();
+    }
+    else if (tokenList[tokenCounter] == numbersym)
+    {
+
+        emit("LIT", 1, 0, tokenList[tokenCounter + 1]);
+        getNextToken();
+    }
+    else if (tokenList[tokenCounter] == lparentsym)
+    {
+
+        getNextToken();
+        expression();
+
+        if (tokenList[tokenCounter] != rparentsym)
+        {
+
+            printf("right parenthesis must follow left parenthesis");
+        }
+
+        getNextToken();
+    }
+    else
+    {
+        printf("arithmetic equations must contain operands, parentheses, numbers, or symbols");
+    }
+}
 
 /* MAIN */
 int main(int argc, char *argv[])
