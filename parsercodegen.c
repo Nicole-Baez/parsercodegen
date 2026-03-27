@@ -935,7 +935,32 @@ void condition()
 // expression
 void expression()
 {
-    /*termino manana*/
+    //"-" at the start means an expression can begin with a negative sign
+    if (tokenList[tokenCounter] == minussym)
+    {
+        getNextToken();
+        term();
+        emit("NEG", 2, 0, 1);
+    }
+    else
+    {
+        term();
+    }
+    while (tokenList[tokenCounter] == plussym || tokenList[tokenCounter] == minussym)
+    {
+        if (tokenList[tokenCounter] == plussym)
+        {
+            getNextToken();
+            term();
+            emit("ADD", 2, 0, 2);
+        }
+        else
+        {
+            getNextToken();
+            term();
+            emit("SUB", 2, 0, 3);
+        }
+    }
 }
 
 // term
