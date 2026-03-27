@@ -762,54 +762,67 @@ void emit(char *name, int num, int l, int m)
     instCount++;
 }
 
-// program
-void program()
-{
-    int tokenCount = 0; // iterates through token list
-
-    // call block
-    block();
-
-    if (tokenList[tokenCount] != periodsym)
-    {
-        printf("Error: program must end with period");
-    }
-
-    // emit halt,
-    emit("SYS", 9, 0, 3);
-}
-
-// block
-void block()
+// statement
+void statement()
 {
 
-    constDeclaration();
-    int numVars = varDeclaration();
-
-    if (numVars == -1)
+    if (tokenList[tokenCounter] == identsym)
     {
-        return; // si detecta un error no se emite la instruccion
-    }
-    emit("INC", 6, 0, numVars + 3);
-}
+        int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter++]]);
+        if (symIndex == -1)
+        {
+            printf("Error: undeclared identifier");
+            // write to output file
+        }
 
-// const-declatation
-void constDeclaration()
-{
-    char identName[12];
+        if (symbolTable[symIndex].kind == 2)
+        {
+            printf("Error: symbol name has already been declared");
+            // output file
+        }
 
-    if (tokenList[tokenCounter] == constsym)
-    {
-        // esto va adentro del do while
         tokenCounter++;
-        if (tokenList[tokenCounter] != identsym)
+
+        if (tokenList[tokenCounter] != becomessym)
         {
-            // ERROR
+            printf("Error: assignment statements must use :=");
+            // output file
         }
-        if (symbolTableCheck(nameTable[tokenList[tokenCounter++]]) != -1)
+
+        tokenCounter++;
+
+        // call expression
+        // expression()
+        emit("STO", 4, symbolTable[symIndex].level, symbolTable[symIndex].addr);
+        return;
+    }
+
+    if (tokenList[tokenCounter] == beginsym)
+    {
+        statement();
+
+        do
         {
-            // ERROR
+            tokenCounter++;
+            statement();
+        } while (tokenList[tokenCounter] == semicolonsym);
+
+        if (tokenList[tokenCounter] != endsym)
+        {
+            printf("Error: begin must be followed by end");
+            // output to file
         }
+
+        return;
+    }
+
+    if (tokenList[tokenCounter] == ifsym)
+    {
+        tokenCounter++;
+        // call condition
+        // condition()
+
+        // int jpcIndex = current code index?
     }
 }
 
@@ -860,28 +873,55 @@ int varDeclaration()
 
     return numVars;
 }
-// statement
-void statement()
+
+// const-declatation
+void constDeclaration()
+{
+    char identName[12];
+
+    if (tokenList[tokenCounter] == constsym)
+    {
+        // esto va adentro del do while
+        tokenCounter++;
+        if (tokenList[tokenCounter] != identsym)
+        {
+            // ERROR
+        }
+        if (symbolTableCheck(nameTable[tokenList[tokenCounter++]]) != -1)
+        {
+            // ERROR
+        }
+    }
+}
+
+// block
+void block()
 {
 
-    if (tokenList[tokenCounter] == identsym)
+    constDeclaration();
+    int numVars = varDeclaration();
+
+    if (numVars == -1)
     {
-        int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter++]]);
-        if (symIndex == -1)
-        {
-            printf("Error: undeclared identifier");
-            // write to output file
-        }
-
-        if (symbolTable[symIndex].kind == 2)
-        {
-            printf("Error: symbol name has already been declared");
-            // output file
-        }
-
-        tokenCounter++;
-        // lo termino mañana
+        return; // si detecta un error no se emite la instruccion
     }
+    emit("INC", 6, 0, numVars + 3);
+}
+
+// program
+void program()
+{
+
+    // call block
+    block();
+
+    if (tokenList[tokenCount] != periodsym)
+    {
+        printf("Error: program must end with period");
+    }
+
+    // emit halt,
+    emit("SYS", 9, 0, 3);
 }
 
 // condition
