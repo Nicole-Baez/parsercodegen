@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
 
 {
     // Array for reserved words
-    char *reservedWord[] = {"null", "begin", "call", "const", "do", "else", "end", "if", "odd", "procedure", "read", "then", "var", "while", "write"};
+    char *reservedWord[] = {"null", "begin", "call", "const", "do", "else", "end", "if", "fi", "odd", "procedure", "read", "then", "var", "while", "write"};
 
     // Buffer used for the lexeme grouping process
     char *bufferLexeme = malloc(strmax + 1);
