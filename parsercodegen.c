@@ -929,7 +929,53 @@ void getNextToken()
 // condition
 void condition()
 {
-    /*termino manana*/
+    expression();
+    if (tokenList[tokenCounter] == eqsym)
+    {
+
+        getNextToken();
+        expression();
+        emit("EQL", 2, 0, 6);
+    }
+    else if (tokenList[tokenCounter] == neqsym)
+    {
+
+        getNextToken();
+        expression();
+        emit("NEQ", 2, 0, 7);
+    }
+    else if (tokenList[tokenCounter] == lessym)
+    {
+
+        getNextToken();
+        expression();
+        emit("LSS", 2, 0, 8);
+    }
+    else if (tokenList[tokenCounter] == leqsym)
+    {
+
+        getNextToken();
+        expression();
+        emit("LEQ", 2, 0, 9);
+    }
+    else if (tokenList[tokenCounter] == gtrsym)
+    {
+
+        getNextToken();
+        expression();
+        emit("GTR", 2, 0, 10);
+    }
+    else if (tokenList[tokenCounter] == geqsym)
+    {
+
+        getNextToken();
+        expression();
+        emit("GEQ", 2, 0, 11);
+    }
+    else
+    {
+        printf("condition must contain comparison operator");
+    }
 }
 
 // expression
