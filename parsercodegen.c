@@ -320,7 +320,7 @@ int nameTableLength = 0;
 int symbolTableCounter = 0;
 
 instruction instructions[MAX_SYMBOL_TABLE_SIZE] = {""};
-int instCount = 0;
+int cx = 0;
 
 // Function that checks for escape sequences (Scanner was turned into an internal module)
 void scanner(FILE *ip)
@@ -754,12 +754,141 @@ void insertSymbolTable(int kind, char name[12], int val, int level, int address,
 void emit(char *name, int num, int l, int m)
 {
     // instruction added to the array
-    strcpy(instructions[instCount].nameOP, name);
-    instructions[instCount].numOP = num;
-    instructions[instCount].L = l;
-    instructions[instCount].M = m;
+    strcpy(instructions[cx].nameOP, name);
+    instructions[cx].numOP = num;
+    instructions[cx].L = l;
+    instructions[cx].M = m;
 
-    instCount++;
+    cx++;
+}
+
+// Identifiers and numbers take two entries in tokenList (symbol + value),
+//  so we advance tokenCounter by 2 instead of 1.
+void getNextToken()
+{
+    if (tokenList[tokenCounter] == identsym || tokenList[tokenCounter] == numbersym)
+    {
+        tokenCounter += 2;
+    }
+    else
+    {
+        tokenCounter++;
+    }
+}
+
+// factor
+void factor()
+{
+
+    int symIdx;
+
+    // if identifier check if it was declared
+    if (tokenList[tokenCounter] == identsym)
+    {
+
+        symIdx = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
+
+        if (symIdx == -1)
+        {
+
+            printf("undeclared identifier");
+            return;
+        }
+        // if it is a constant give instruction LIT
+        if (symbolTable[symIdx].kind == 1)
+        {
+
+            emit("LIT", 1, 0, symbolTable[symIdx].val);
+        }
+        else
+        {
+
+            // if variable Load it
+            emit("LOD", 3, 0, symbolTable[symIdx].addr);
+        }
+
+        getNextToken();
+    }
+    else if (tokenList[tokenCounter] == numbersym)
+    {
+
+        emit("LIT", 1, 0, tokenList[tokenCounter + 1]);
+        getNextToken();
+    }
+    else if (tokenList[tokenCounter] == lparentsym)
+    {
+
+        getNextToken();
+        expression();
+
+        if (tokenList[tokenCounter] != rparentsym)
+        {
+
+            printf("Error: right parenthesis must follow left parenthesis\n");
+        }
+
+        getNextToken();
+    }
+    else
+    {
+        printf("Error: arithmetic equations must contain operands, parentheses, numbers, or symbols\n");
+    }
+}
+
+// term
+void term()
+{
+    factor();
+
+    while (tokenList[tokenCounter] == multsym || tokenList[tokenCounter] == slashsym)
+    {
+
+        if (tokenList[tokenCounter] == multsym)
+        {
+
+            getNextToken();
+            factor();
+            emit("MUL", 2, 0, 4);
+        }
+        else
+        {
+
+            getNextToken();
+            factor();
+            emit("DIV", 2, 0, 5);
+        }
+    }
+}
+
+// expression
+void expression()
+{
+    //"-" at the start means an expression can begin with a negative sign
+    if (tokenList[tokenCounter] == minussym)
+    {
+        getNextToken();
+        term();
+        emit("NEG", 2, 0, 1);
+    }
+    else
+    {
+        term();
+    }
+    while (tokenList[tokenCounter] == plussym || tokenList[tokenCounter] == minussym)
+    {
+        if (tokenList[tokenCounter] == plussym)
+        {
+            getNextToken();
+            term();
+            emit("ADD", 2, 0, 2);
+        }
+        else
+        {
+            getNextToken();
+            term();
+            emit("SUB", 2, 0, 3);
+        }
+    }
 }
 
 // statement
@@ -771,29 +900,33 @@ void statement()
         int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter++]]);
         if (symIndex == -1)
         {
-            printf("Error: undeclared identifier");
+            printf("Error: undeclared identifier\n");
             // write to output file
+            return;
         }
 
         if (symbolTable[symIndex].kind == 2)
         {
-            printf("Error: symbol name has already been declared");
-            // output file
+            printf("Error: symbol name has already been declared\n");
+            // write to output file
+            return;
         }
 
-        tokenCounter++;
+        getNextToken();
 
         if (tokenList[tokenCounter] != becomessym)
         {
-            printf("Error: assignment statements must use :=");
+            printf("Error: assignment statements must use :=\n");
             // output file
+            // write to output file
+            return;
         }
 
-        tokenCounter++;
+        getNextToken();
 
         // call expression
-        // expression()
-        emit("STO", 4, symbolTable[symIndex].level, symbolTable[symIndex].addr);
+        expression();
+        emit("STO", 4, 0, symbolTable[symIndex].addr);
         return;
     }
 
@@ -803,14 +936,15 @@ void statement()
 
         do
         {
-            tokenCounter++;
+            getNextToken();
             statement();
         } while (tokenList[tokenCounter] == semicolonsym);
 
         if (tokenList[tokenCounter] != endsym)
         {
-            printf("Error: begin must be followed by end");
+            printf("Error: begin must be followed by end\n");
             // output to file
+            return;
         }
 
         return;
@@ -818,11 +952,112 @@ void statement()
 
     if (tokenList[tokenCounter] == ifsym)
     {
-        tokenCounter++;
+        getNextToken();
         // call condition
-        // condition()
+        condition();
 
-        // int jpcIndex = current code index?
+        int jpcIndex = cx;
+        emit("JPC", 8, 0, 0);
+
+        if (tokenList[tokenCounter] != thensym)
+        {
+            printf("Error: if must be followed by then\n");
+            // output file
+            return;
+        }
+
+        getNextToken();
+        statement();
+
+        instructions[jpcIndex].M = cx;
+
+        if (tokenList[tokenCounter] == elsesym)
+        {
+            statement();
+        }
+
+        if (tokenList[tokenCounter] != fisym)
+        {
+            printf("Error: if-then statement must end with fi\n");
+            // output file
+            return;
+        }
+
+        return;
+    }
+
+    if (tokenList[tokenCounter] == whilesym)
+    {
+        getNextToken();
+        int loopIndex = cx;
+        condition();
+
+        if (tokenList[tokenCounter] != dosym)
+        {
+            printf("Error: while must be followed by do\n");
+            // output file
+            return;
+        }
+
+        getNextToken();
+
+        int jpcIndex = cx;
+
+        emit("JPC", 8, 0, 0);
+
+        statement();
+
+        emit("JPC", 8, 0, loopIndex);
+
+        instructions[jpcIndex].M = cx;
+
+        if (tokenList[tokenCounter] != odsym)
+        {
+            printf("Error: do must be followed by od\n");
+            // output file
+            return;
+        }
+
+        return;
+    }
+
+    if (tokenList[tokenCounter] == readsym)
+    {
+        getNextToken();
+        if (tokenList[tokenCounter] != identsym)
+        {
+            printf("Error: const, var, and read keywords must be followed by identifier\n");
+            // output file
+            return;
+        }
+
+        int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter++]]);
+        if (symIndex == -1)
+        {
+            printf("Error: undeclared identifier\n");
+            // output
+            return;
+        }
+
+        if (symbolTable[symIndex].kind != 2)
+        {
+            printf("Error: only variable values may be altered\n");
+            // output
+            return;
+        }
+
+        getNextToken();
+        emit("SYS", 9, 0, 2);
+        emit("STO", 4, 0, symbolTable[symIndex].addr);
+        return;
+    }
+
+    if (tokenList[tokenCounter] == writesym)
+    {
+        getNextToken();
+        expression();
+        emit("SYS", 9, 0, 1);
+        return;
     }
 }
 
@@ -835,7 +1070,7 @@ int varDeclaration()
     {
         do
         {
-            tokenCounter++;
+            getNextToken();
             if (tokenList[tokenCounter] != identsym)
             {
                 printf("Error: const, var, and read keywords must be followed by identifier");
@@ -850,14 +1085,14 @@ int varDeclaration()
                 return -1;
             }
 
-            tokenCounter++;
+            getNextToken();
             int varIndex = tokenList[tokenCounter];
 
             // adds to symbol table
             insertSymbolTable(2, nameTable[varIndex], 0, 0, numVars + 3, 0);
 
             numVars++;
-            tokenCounter++;
+            getNextToken();
 
         } while (tokenList[tokenCounter] == commasym);
 
@@ -868,7 +1103,7 @@ int varDeclaration()
             return -1;
         }
 
-        tokenCounter++;
+        getNextToken();
     }
 
     return numVars;
@@ -878,19 +1113,47 @@ int varDeclaration()
 void constDeclaration()
 {
     char identName[12];
-
-    if (tokenList[tokenCounter] == constsym)
+    if ((tokenList[tokenCounter] == constsym))
     {
-        // esto va adentro del do while
-        tokenCounter++;
-        if (tokenList[tokenCounter] != identsym)
+        do
         {
-            // ERROR
-        }
-        if (symbolTableCheck(nameTable[tokenList[tokenCounter++]]) != -1)
+            getNextToken();
+            if (tokenList[tokenCounter] != identsym)
+            {
+                printf("Error: const, var, and read keywords must be followed by identifier");
+            }
+
+            if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
+            {
+                printf("Error: symbol name has already been declared");
+            }
+
+            strcpy(identName, nameTable[tokenList[tokenCounter + 1]]);
+
+            getNextToken();
+
+            if (tokenList[tokenCounter] != eqsym)
+            {
+                printf("Error: constants must be assigned with =");
+            }
+
+            getNextToken();
+
+            if (tokenList[tokenCounter] != numbersym)
+            {
+                printf("Error: constants must be assigned an integer value");
+            }
+
+            // add to symbol table
+            insertSymbolTable(1, identName, tokenList[tokenCounter + 1], 0, 0, 0);
+            getNextToken();
+
+        } while (tokenList[tokenCounter] == commasym);
+        if (tokenList[tokenCounter] != semicolonsym)
         {
-            // ERROR
+            printf("Error: constant and variable declarations must be followed by a semicolon");
         }
+        getNextToken();
     }
 }
 
