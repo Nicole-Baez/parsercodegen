@@ -1321,7 +1321,8 @@ void program()
     // if there were no other errors (program ran till the end) AND no period = print the error
     if (tokenList[tokenCounter] != periodsym && flagError != 1)
     {
-        printf("Error: program must end with period");
+        printf("Error: program must end with period\n");
+        flagError = 1;
         return;
     }
 
