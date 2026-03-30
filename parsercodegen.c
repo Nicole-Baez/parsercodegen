@@ -321,7 +321,8 @@ int symbolTableCounter = 0;
 
 int instructions[MAX_SYMBOL_TABLE_SIZE][3];
 int cx = 0;
-char *nameOP_storage[strmax + 1] = {""};
+char nameOP_storage[strmax + 1][4] = {""};
+int nameOPcounter = 0;
 
 // IMPLEMENT LOGIC FOR SAVING NAMES OF INSTRUCTIONS
 
@@ -749,6 +750,8 @@ void expression()
         getNextToken();
         term();
         emit(2, 0, 1);
+        strcpy(nameOP_storage[nameOPcounter], "OPR");
+        nameOPcounter++;
     }
     else
     {
@@ -761,12 +764,16 @@ void expression()
             getNextToken();
             term();
             emit(2, 0, 2);
+            strcpy(nameOP_storage[nameOPcounter], "OPR");
+            nameOPcounter++;
         }
         else
         {
             getNextToken();
             term();
             emit(2, 0, 3);
+            strcpy(nameOP_storage[nameOPcounter], "OPR");
+            nameOPcounter++;
         }
     }
 }
@@ -782,6 +789,8 @@ void condition()
         getNextToken();
         expression();
         emit(2, 0, 6);
+        strcpy(nameOP_storage[nameOPcounter], "OPR");
+        nameOPcounter++;
     }
     else if (tokenList[tokenCounter] == neqsym)
     {
@@ -789,6 +798,8 @@ void condition()
         getNextToken();
         expression();
         emit(2, 0, 7);
+        strcpy(nameOP_storage[nameOPcounter], "OPR");
+        nameOPcounter++;
     }
     else if (tokenList[tokenCounter] == lessym)
     {
@@ -796,6 +807,8 @@ void condition()
         getNextToken();
         expression();
         emit(2, 0, 8);
+        strcpy(nameOP_storage[nameOPcounter], "OPR");
+        nameOPcounter++;
     }
     else if (tokenList[tokenCounter] == leqsym)
     {
@@ -803,6 +816,8 @@ void condition()
         getNextToken();
         expression();
         emit(2, 0, 9);
+        strcpy(nameOP_storage[nameOPcounter], "OPR");
+        nameOPcounter++;
     }
     else if (tokenList[tokenCounter] == gtrsym)
     {
@@ -810,6 +825,8 @@ void condition()
         getNextToken();
         expression();
         emit(2, 0, 10);
+        strcpy(nameOP_storage[nameOPcounter], "OPR");
+        nameOPcounter++;
     }
     else if (tokenList[tokenCounter] == geqsym)
     {
@@ -817,6 +834,8 @@ void condition()
         getNextToken();
         expression();
         emit(2, 0, 11);
+        strcpy(nameOP_storage[nameOPcounter], "OPR");
+        nameOPcounter++;
     }
     else
     {
@@ -847,22 +866,26 @@ void factor()
         // if it is a constant give instruction LIT
         if (symbolTable[symIdx].kind == 1)
         {
-
             emit(1, 0, symbolTable[symIdx].val);
+            strcpy(nameOP_storage[nameOPcounter], "LIT");
+            nameOPcounter++;
         }
         else
         {
 
             // if variable Load it
             emit(3, 0, symbolTable[symIdx].addr);
+            strcpy(nameOP_storage[nameOPcounter], "LOD");
+            nameOPcounter++;
         }
 
         getNextToken();
     }
     else if (tokenList[tokenCounter] == numbersym)
     {
-
         emit(1, 0, tokenList[tokenCounter + 1]);
+        strcpy(nameOP_storage[nameOPcounter], "LIT");
+        nameOPcounter++;
         getNextToken();
     }
     else if (tokenList[tokenCounter] == lparentsym)
@@ -900,6 +923,8 @@ void term()
             getNextToken();
             factor();
             emit(2, 0, 4);
+            strcpy(nameOP_storage[nameOPcounter], "OPR");
+            nameOPcounter++;
         }
         else
         {
@@ -907,6 +932,8 @@ void term()
             getNextToken();
             factor();
             emit(2, 0, 5);
+            strcpy(nameOP_storage[nameOPcounter], "OPR");
+            nameOPcounter++;
         }
     }
 }
@@ -949,6 +976,8 @@ void statement()
 
         expression();
         emit(4, 0, symbolTable[symIndex].addr);
+        strcpy(nameOP_storage[nameOPcounter], "STO");
+        nameOPcounter++;
         return;
     }
 
@@ -981,6 +1010,8 @@ void statement()
 
         int jpcIndex = cx;
         emit(8, 0, 0);
+        strcpy(nameOP_storage[nameOPcounter], "JPC");
+        nameOPcounter++;
 
         if (tokenList[tokenCounter] != thensym)
         {
@@ -1026,12 +1057,14 @@ void statement()
         getNextToken();
 
         int jpcIndex = cx;
-
         emit(8, 0, 0);
+        strcpy(nameOP_storage[nameOPcounter], "JPC");
+        nameOPcounter++;
 
         statement();
-
         emit(7, 0, loopIndex);
+        strcpy(nameOP_storage[nameOPcounter], "JMP");
+        nameOPcounter++;
 
         instructions[jpcIndex][2] = cx;
 
@@ -1072,7 +1105,11 @@ void statement()
 
         getNextToken();
         emit(9, 0, 2);
+        strcpy(nameOP_storage[nameOPcounter], "SYS");
+        nameOPcounter++;
         emit(4, 0, symbolTable[symIndex].addr);
+        strcpy(nameOP_storage[nameOPcounter], "STO");
+        nameOPcounter++;
         return;
     }
 
@@ -1081,6 +1118,8 @@ void statement()
         getNextToken();
         expression();
         emit(9, 0, 1);
+        strcpy(nameOP_storage[nameOPcounter], "SYS");
+        nameOPcounter++;
         return;
     }
 }
@@ -1200,8 +1239,9 @@ void block()
     {
         return; // si detecta un error no se emite la instruccion
     }
-
     emit(6, 0, numVars + 3);
+    strcpy(nameOP_storage[nameOPcounter], "INC");
+    nameOPcounter++;
 
     statement();
 }
@@ -1221,6 +1261,8 @@ void program()
 
     // emit halt,
     emit(9, 0, 3);
+    strcpy(nameOP_storage[nameOPcounter], "SYS");
+    nameOPcounter++;
 }
 
 void printInst()
@@ -1233,7 +1275,7 @@ void printInst()
     for (int i = 0; i < cx; i++)
     {
 
-        printf("|  %d  | PLH |  %d  |  %d  |\n", i, instructions[i][1], instructions[i][2]);
+        printf("|  %d  | %s |  %d  |  %d  |\n", i, nameOP_storage[i], instructions[i][1], instructions[i][2]);
     }
 
     printf("+------+-------+---+-----+\n");
