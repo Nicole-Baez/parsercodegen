@@ -319,8 +319,11 @@ char *nameTable[strmax + 1] = {""}; // Array to store the name table
 int nameTableLength = 0;
 int symbolTableCounter = 0;
 
-instruction instructions[MAX_SYMBOL_TABLE_SIZE];
+int instructions[MAX_SYMBOL_TABLE_SIZE][3];
 int cx = 0;
+char *nameOP_storage[strmax + 1] = {""};
+
+// IMPLEMENT LOGIC FOR SAVING NAMES OF INSTRUCTIONS
 
 // function prototypes
 void program();
@@ -356,7 +359,7 @@ void scanner(FILE *ip)
     // Used to read each char
     char ch;
 
-    printf("Source Program:\n\n");
+    // printf("Source Program:\n\n");
 
     int i = 0;           // Counter to keep track of the buffer
     int lexLength = 0;   // Counter to keep track of the lexemes array
@@ -389,7 +392,7 @@ void scanner(FILE *ip)
             while ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9'))
             {
                 // Char is printed
-                putchar(ch);
+                // putchar(ch);
 
                 // Chars are added to the buffer until a non letter and non number character is reached
                 bufferLexeme[i] = ch;
@@ -473,7 +476,7 @@ void scanner(FILE *ip)
             // Checks if the next character is also a number
             while (ch >= '0' && ch <= '9')
             {
-                putchar(ch);
+                // putchar(ch);
                 bufferLexeme[i] = ch;
                 ch = fgetc(ip);
                 i++;
@@ -526,7 +529,7 @@ void scanner(FILE *ip)
         // If it is not a letter or a number, it could be a special symbol
         else // if (!((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')))
         {
-            putchar(ch);
+            // putchar(ch);
             i = 0;
             bufferLexeme[i] = ch;
 
@@ -578,7 +581,7 @@ void scanner(FILE *ip)
             if (ch == '/')
             {
                 ch = fgetc(ip);
-                putchar(ch);
+                // putchar(ch);
 
                 // Checks if it is a comment
                 if (ch == '*')
@@ -659,70 +662,10 @@ void scanner(FILE *ip)
     // Print portion
     // printf("\n");
 
-    printf("Lexeme Table:\n\n");
-    printf("lexeme\t\ttoken type\n");
-
-    int token = 0;           // To keep track of the tokens (it has to skip the identifier index)
-    int errorPrintIndex = 0; // To keep track of the error messages
-    for (int i = 0; i < lexLength; i++)
-    {
-
-        // Prints the lexeme
-        printf("%s\t\t", lexemes[i]);
-
-        // Checks for an error by checking for skipsym
-        if (tokenList[token] == skipsym)
-        {
-            printf("%s\n", errorCollect[errorPrintIndex]); // Prints error message
-            errorPrintIndex++;
-        }
-        else
-        {
-            // If not an error, print the token number
-            printf("%d\n", tokenList[token]);
-        }
-
-        // If the token just printed was an identifier or a number, token is increased by 2
-        if (tokenList[token] == identsym || tokenList[token] == numbersym)
-        {
-            token += 2;
-        }
-
-        // Else it's increased by 1
-        else
-        {
-            token++;
-        }
-    }
+    // printf("Lexeme Table:\n\n");
+    // printf("lexeme\t\ttoken type\n");
 
     // Prints the name table
-
-    printf("\nName Table:\n\n");
-    printf("Index Name\n");
-    for (int i = 0; i < nameTableLength; i++)
-    {
-        printf("%d\t%s\n", i, nameTable[i]);
-    }
-
-    // Prints the token list
-    printf("\nToken List:\n\n");
-
-    for (int i = 0; i < tokenCount; i++)
-    {
-        // If the token is an identifier or a number, it also prints the subsequent index or number
-        if (tokenList[i] == identsym || tokenList[i] == numbersym)
-        {
-            printf("%d %d ", tokenList[i], tokenList[i + 1]);
-            i++;
-        }
-
-        else
-        {
-            printf("%d ", tokenList[i]);
-        }
-    }
-
-    printf("\n");
 
     // File pointer is closed
     fclose(ip);
@@ -761,8 +704,8 @@ void insertSymbolTable(int kind, char name[12], int val, int level, int address,
     symbolTable[symbolTableCounter].addr = address;
     symbolTable[symbolTableCounter].mark = mark;
 
-    printf("INSERTED IN SYMBOL TABLE:\n");
-    printf("kind: %d   name: %s    value: %d    address: %d    mark: %d\n", symbolTable[symbolTableCounter].kind, symbolTable[symbolTableCounter].name, symbolTable[symbolTableCounter].val, symbolTable[symbolTableCounter].addr, symbolTable[symbolTableCounter].mark);
+    // printf("INSERTED IN SYMBOL TABLE:\n");
+    // printf("kind: %d   name: %s    value: %d    address: %d    mark: %d\n", symbolTable[symbolTableCounter].kind, symbolTable[symbolTableCounter].name, symbolTable[symbolTableCounter].val, symbolTable[symbolTableCounter].addr, symbolTable[symbolTableCounter].mark);
 
     symbolTableCounter++;
 }
@@ -770,13 +713,13 @@ void insertSymbolTable(int kind, char name[12], int val, int level, int address,
 // mark for symbol table
 
 // emit
-void emit(char name[4], int num, int l, int m)
+void emit(int num, int l, int m)
 {
     // instruction added to the array
-    strcpy(instructions[cx].nameOP, name);
-    instructions[cx].numOP = num;
-    instructions[cx].L = l;
-    instructions[cx].M = m;
+    // strcpy(instructions[cx].nameOP, name);
+    instructions[cx][0] = num;
+    instructions[cx][1] = l;
+    instructions[cx][2] = m;
 
     cx++;
 }
@@ -799,13 +742,13 @@ void getNextToken()
 // expression
 void expression()
 {
-    printf("HERE IN EXPRESSION\n");
+    // printf("HERE IN EXPRESSION\n");
     //"-" at the start means an expression can begin with a negative sign
     if (tokenList[tokenCounter] == minussym)
     {
         getNextToken();
         term();
-        emit("NEG", 2, 0, 1);
+        emit(2, 0, 1);
     }
     else
     {
@@ -817,13 +760,13 @@ void expression()
         {
             getNextToken();
             term();
-            emit("OPR", 2, 0, 2);
+            emit(2, 0, 2);
         }
         else
         {
             getNextToken();
             term();
-            emit("OPR", 2, 0, 3);
+            emit(2, 0, 3);
         }
     }
 }
@@ -831,49 +774,49 @@ void expression()
 // condition
 void condition()
 {
-    printf("HERE IN CONDITION\n");
+    // printf("HERE IN CONDITION\n");
     expression();
     if (tokenList[tokenCounter] == eqsym)
     {
 
         getNextToken();
         expression();
-        emit("OPR", 2, 0, 6);
+        emit(2, 0, 6);
     }
     else if (tokenList[tokenCounter] == neqsym)
     {
 
         getNextToken();
         expression();
-        emit("OPR", 2, 0, 7);
+        emit(2, 0, 7);
     }
     else if (tokenList[tokenCounter] == lessym)
     {
 
         getNextToken();
         expression();
-        emit("OPR", 2, 0, 8);
+        emit(2, 0, 8);
     }
     else if (tokenList[tokenCounter] == leqsym)
     {
 
         getNextToken();
         expression();
-        emit("OPR", 2, 0, 9);
+        emit(2, 0, 9);
     }
     else if (tokenList[tokenCounter] == gtrsym)
     {
 
         getNextToken();
         expression();
-        emit("OPR", 2, 0, 10);
+        emit(2, 0, 10);
     }
     else if (tokenList[tokenCounter] == geqsym)
     {
 
         getNextToken();
         expression();
-        emit("OPR", 2, 0, 11);
+        emit(2, 0, 11);
     }
     else
     {
@@ -885,7 +828,7 @@ void condition()
 void factor()
 {
 
-    printf("HERE IN FACTOR\n");
+    // printf("HERE IN FACTOR\n");
 
     int symIdx;
 
@@ -905,13 +848,13 @@ void factor()
         if (symbolTable[symIdx].kind == 1)
         {
 
-            emit("LIT", 1, 0, symbolTable[symIdx].val);
+            emit(1, 0, symbolTable[symIdx].val);
         }
         else
         {
 
             // if variable Load it
-            emit("LOD", 3, 0, symbolTable[symIdx].addr);
+            emit(3, 0, symbolTable[symIdx].addr);
         }
 
         getNextToken();
@@ -919,7 +862,7 @@ void factor()
     else if (tokenList[tokenCounter] == numbersym)
     {
 
-        emit("LIT", 1, 0, tokenList[tokenCounter + 1]);
+        emit(1, 0, tokenList[tokenCounter + 1]);
         getNextToken();
     }
     else if (tokenList[tokenCounter] == lparentsym)
@@ -945,7 +888,7 @@ void factor()
 // term
 void term()
 {
-    printf("HERE IN TERM\n");
+    // printf("HERE IN TERM\n");
     factor();
 
     while (tokenList[tokenCounter] == multsym || tokenList[tokenCounter] == slashsym)
@@ -956,14 +899,14 @@ void term()
 
             getNextToken();
             factor();
-            emit("MUL", 2, 0, 4);
+            emit(2, 0, 4);
         }
         else
         {
 
             getNextToken();
             factor();
-            emit("DIV", 2, 0, 5);
+            emit(2, 0, 5);
         }
     }
 }
@@ -971,7 +914,7 @@ void term()
 // statement
 void statement()
 {
-    printf("HERE IN STATEMENT\n");
+    // printf("HERE IN STATEMENT\n");
 
     if (tokenList[tokenCounter] == identsym)
     {
@@ -1005,7 +948,7 @@ void statement()
         // call expression
 
         expression();
-        emit("STO", 4, 0, symbolTable[symIndex].addr);
+        emit(4, 0, symbolTable[symIndex].addr);
         return;
     }
 
@@ -1037,7 +980,7 @@ void statement()
         condition();
 
         int jpcIndex = cx;
-        emit("JPC", 8, 0, 0);
+        emit(8, 0, 0);
 
         if (tokenList[tokenCounter] != thensym)
         {
@@ -1049,7 +992,7 @@ void statement()
         getNextToken();
         statement();
 
-        instructions[jpcIndex].M = cx;
+        instructions[jpcIndex][2] = cx * 3;
 
         if (tokenList[tokenCounter] == elsesym)
         {
@@ -1070,7 +1013,7 @@ void statement()
     if (tokenList[tokenCounter] == whilesym)
     {
         getNextToken();
-        int loopIndex = cx;
+        int loopIndex = cx * 3;
         condition();
 
         if (tokenList[tokenCounter] != dosym)
@@ -1084,13 +1027,13 @@ void statement()
 
         int jpcIndex = cx;
 
-        emit("JPC", 8, 0, 0);
+        emit(8, 0, 0);
 
         statement();
 
-        emit("JMP", 7, 0, loopIndex);
+        emit(7, 0, loopIndex);
 
-        instructions[jpcIndex].M = cx;
+        instructions[jpcIndex][2] = cx;
 
         if (tokenList[tokenCounter] != odsym)
         {
@@ -1128,8 +1071,8 @@ void statement()
         }
 
         getNextToken();
-        emit("SYS", 9, 0, 2);
-        emit("STO", 4, 0, symbolTable[symIndex].addr);
+        emit(9, 0, 2);
+        emit(4, 0, symbolTable[symIndex].addr);
         return;
     }
 
@@ -1137,7 +1080,7 @@ void statement()
     {
         getNextToken();
         expression();
-        emit("SYS", 9, 0, 1);
+        emit(9, 0, 1);
         return;
     }
 }
@@ -1146,7 +1089,7 @@ void statement()
 int varDeclaration()
 {
     int numVars = 0;
-    printf("HERE IN VARDECLARATION\n");
+    // printf("HERE IN VARDECLARATION\n");
 
     char identName[12];
 
@@ -1164,7 +1107,7 @@ int varDeclaration()
                 // write to output file
             }
 
-            printf("Name table variable: %s", nameTable[tokenList[tokenCounter + 1]]);
+            // printf("Name table variable: %s", nameTable[tokenList[tokenCounter + 1]]);
 
             // checks duplicates
             if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
@@ -1199,7 +1142,7 @@ int varDeclaration()
 // const-declatation
 void constDeclaration()
 {
-    printf("HERE IN CONSTDECLARATION\n");
+    // printf("HERE IN CONSTDECLARATION\n");
     char identName[12];
     if (tokenList[tokenCounter] == constsym)
     {
@@ -1249,7 +1192,7 @@ void constDeclaration()
 void block()
 {
 
-    printf("\nHERE IN BLOCK\n");
+    // printf("\nHERE IN BLOCK\n");
     constDeclaration();
     int numVars = varDeclaration();
 
@@ -1258,7 +1201,7 @@ void block()
         return; // si detecta un error no se emite la instruccion
     }
 
-    emit("INC", 6, 0, numVars + 3);
+    emit(6, 0, numVars + 3);
 
     statement();
 }
@@ -1268,7 +1211,7 @@ void program()
 {
 
     // call block
-    printf("HERE IN PROGRAM\n");
+    // printf("HERE IN PROGRAM\n");
     block();
 
     if (tokenList[tokenCounter] != periodsym)
@@ -1277,7 +1220,7 @@ void program()
     }
 
     // emit halt,
-    emit("SYS", 9, 0, 3);
+    emit(9, 0, 3);
 }
 
 void printInst()
@@ -1290,7 +1233,7 @@ void printInst()
     for (int i = 0; i < cx; i++)
     {
 
-        printf("|  %d  |  %s  |  %d  |  %d  |\n", i, instructions[i].nameOP, instructions[i].L, instructions[i].M);
+        printf("|  %d  | PLH |  %d  |  %d  |\n", i, instructions[i][1], instructions[i][2]);
     }
 
     printf("+------+-------+---+-----+\n");
@@ -1319,7 +1262,7 @@ int main(int argc, char *argv[])
 
         // llamar program
         program();
-        printf("INSTRUCTION: %s, %d, %d\n", instructions[0].nameOP, instructions[0].L, instructions[0].M);
+        // printf("INSTRUCTION: %s, %d, %d\n", instructions[0].nameOP, instructions[0].L, instructions[0].M);
         printInst();
 
         // print instructions
