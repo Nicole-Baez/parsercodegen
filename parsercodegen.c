@@ -1244,6 +1244,12 @@ void block()
     nameOPcounter++;
 
     statement();
+
+    // setting mark to 1
+    for (int i = 0; i < symbolTableCounter; i++)
+    {
+        symbolTable[i].mark = 1;
+    }
 }
 
 // program
