@@ -1255,6 +1255,15 @@ void block()
 // program
 void program()
 {
+    // check for skipsym
+    for (int i = 0; i < tokenCount; i++)
+    {
+        if (tokenList[i] == skipsym)
+        {
+            printf("Error: Scanning error detected by lexer (skipsym present)");
+            return;
+        }
+    }
 
     // call block
     // printf("HERE IN PROGRAM\n");
