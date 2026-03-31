@@ -258,9 +258,9 @@ Since you're returning -1 directly on any error, you don't need the error flag v
 
 #### Round 4
 
-**Prompt:** Help me understand what this homework does, don't give me code.
-**AI Output:** Explained that HW3 extends the HW2 scanner into a full compiler front-end for PL/0 with three stages: the scanner tokenizes the source, the parser validates grammar using recursive descent, and the code generator emits PM/0 assembly instructions simultaneously. It also explained the symbol table, how errors are handled, and clarified grammar notation like [ ] meaning optional and { } meaning repeating.
-**Verification/Edits:** Used the explanation to understand the overall structure before writing any code. I then asked follow-up questions about specific parts like the token list layout, the mark field in the symbol table, how factors relate to multiplication, and how to implement individual functions like constDeclaration(), factor(), and term(). I verified the logic of each function myself and made corrections independently, such as ignoring the tokenCounter increment suggestion in Round 3 of the log. I also cross-referenced the ISA table in the assignment PDF to confirm opcodes like LOD (03), MUL (02/4), and DIV (02/5).
+**Prompt:** 
+**AI Output:** 
+**Verification/Edits:** 
 
 
 

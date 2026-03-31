@@ -1,4 +1,3 @@
-const x = 5;
-begin
-  x := 10;
+var xcjioasunihujacioj; 
+begin 
 end.
