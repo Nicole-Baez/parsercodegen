@@ -751,6 +751,8 @@ void expression()
     {
         getNextToken();
         term();
+        if (errorFlag == 1)
+            return;
         emit(2, 0, 1);
         strcpy(nameOP_storage[nameOPcounter], "OPR");
         nameOPcounter++;
@@ -758,6 +760,8 @@ void expression()
     else
     {
         term();
+        if (errorFlag == 1)
+            return;
     }
     while (tokenList[tokenCounter] == plussym || tokenList[tokenCounter] == minussym)
     {
@@ -765,6 +769,8 @@ void expression()
         {
             getNextToken();
             term();
+            if (errorFlag == 1)
+                return;
             emit(2, 0, 2);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -773,6 +779,8 @@ void expression()
         {
             getNextToken();
             term();
+            if (errorFlag == 1)
+                return;
             emit(2, 0, 3);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -922,6 +930,8 @@ void term()
 {
     // printf("HERE IN TERM\n");
     factor();
+    if (errorFlag == 1)
+        return;
 
     while (tokenList[tokenCounter] == multsym || tokenList[tokenCounter] == slashsym)
     {
@@ -931,6 +941,8 @@ void term()
 
             getNextToken();
             factor();
+            if (errorFlag == 1)
+                return;
             emit(2, 0, 4);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -940,6 +952,8 @@ void term()
 
             getNextToken();
             factor();
+            if (errorFlag == 1)
+                return;
             emit(2, 0, 5);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -987,6 +1001,8 @@ void statement()
         // call expression
 
         expression();
+        if (errorFlag == 1)
+            return;
         emit(4, 0, symbolTable[symIndex].addr);
         strcpy(nameOP_storage[nameOPcounter], "STO");
         nameOPcounter++;
@@ -1080,6 +1096,8 @@ void statement()
         nameOPcounter++;
 
         statement();
+        if (errorFlag == 1)
+            return;
         emit(7, 0, loopIndex);
         strcpy(nameOP_storage[nameOPcounter], "JMP");
         nameOPcounter++;
