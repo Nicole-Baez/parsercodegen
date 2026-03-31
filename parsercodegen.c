@@ -488,8 +488,6 @@ void scanner(FILE *ip)
             bufferLexeme[i] = '\0';
             ungetc(ch, ip);
 
-            int token = numbersym;
-
             // If the number is longer than 5 digits
             if (strlen(bufferLexeme) > 5)
             {
