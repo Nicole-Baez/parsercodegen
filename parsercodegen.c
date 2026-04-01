@@ -20,6 +20,7 @@ Class: COP 3402 - Systems Software - Spring 2026
 Instructor: Dr. Jie Lin
 Due Date: See Webcourses for the posted due date and time.
 */
+// MUSTDO FIX LOGIC FOR >
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -539,15 +540,16 @@ void scanner(FILE *ip)
 
                 ch = fgetc(ip);
 
-                // Cheks if the next character is also a special symbol
-                if (!((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')))
+                if (ch == '=' || (bufferLexeme[i] == '<' && ch == '>'))
                 {
-
                     bufferLexeme[i + 1] = ch;
+                    bufferLexeme[i + 2] = '\0';
                 }
-
-                // Null terminator
-                bufferLexeme[i + 2] = '\0';
+                else
+                {
+                    ungetc(ch, ip);
+                    bufferLexeme[i + 1] = '\0';
+                }
 
                 int token = mapSpecialSym(bufferLexeme);
 
@@ -1077,6 +1079,8 @@ void statement()
         getNextToken();
         int loopIndex = cx * 3;
         condition();
+        if (errorFlag == 1)
+            return;
 
         if (tokenList[tokenCounter] != dosym)
         {
