@@ -325,6 +325,7 @@ int cx = 0;
 char nameOP_storage[strmax + 1][4] = {""};
 int nameOPcounter = 0;
 int errorFlag = 0;
+char errorMessage[100];
 
 // IMPLEMENT LOGIC FOR SAVING NAMES OF INSTRUCTIONS
 
@@ -850,6 +851,7 @@ void condition()
     else
     {
         printf("Error: condition must contain comparison operator");
+        strcpy(errorMessage, "Error: condition must contain comparison operator");
         errorFlag = 1;
         return;
     }
@@ -873,6 +875,7 @@ void factor()
         {
 
             printf("Error: undeclared identifier");
+            strcpy(errorMessage, "Error: undeclared identifier");
             errorFlag = 1;
             return;
         }
@@ -911,6 +914,7 @@ void factor()
         {
 
             printf("Error: right parenthesis must follow left parenthesis\n");
+            strcpy(errorMessage, "Error: right parenthesis must follow left parenthesis");
             errorFlag = 1;
             return;
         }
@@ -920,6 +924,7 @@ void factor()
     else
     {
         printf("Error: arithmetic equations must contain operands, parentheses, numbers, or symbols\n");
+        strcpy(errorMessage, "Error: arithmetic equations must contain operands, parentheses, numbers, or symbols");
         errorFlag = 1;
         return;
     }
@@ -972,6 +977,7 @@ void statement()
         if (symIndex == -1)
         {
             printf("Error: undeclared identifier\n");
+            strcpy(errorMessage, "Error: undeclared identifier");
             errorFlag = 1;
             // write to output file
             return;
@@ -980,6 +986,7 @@ void statement()
         if (symbolTable[symIndex].kind != 2)
         {
             printf("Error: only variable values may be altered\n");
+            strcpy(errorMessage, "Error: only variable values may be altered");
             errorFlag = 1;
             // write to output file
             return;
@@ -990,6 +997,7 @@ void statement()
         if (tokenList[tokenCounter] != becomessym)
         {
             printf("Error: assignment statements must use :=\n");
+            strcpy(errorMessage, "Error: assignment statements must use :=");
             errorFlag = 1;
             // output file
             // write to output file
@@ -1025,6 +1033,7 @@ void statement()
         if (tokenList[tokenCounter] != endsym)
         {
             printf("Error: begin must be followed by end\n");
+            strcpy(errorMessage, "Error: begin must be followed by end");
             errorFlag = 1;
             // output to file
             return;
@@ -1047,6 +1056,7 @@ void statement()
         if (tokenList[tokenCounter] != thensym)
         {
             printf("Error: if must be followed by then\n");
+            strcpy(errorMessage, "Error: if must be followed by then");
             errorFlag = 1;
             // output file
             return;
@@ -1066,6 +1076,7 @@ void statement()
         if (tokenList[tokenCounter] != fisym)
         {
             printf("Error: if-then statement must end with fi\n");
+            strcpy(errorMessage, "Error: if-then statement must end with fi");
             errorFlag = 1;
             // output file
             return;
@@ -1085,6 +1096,7 @@ void statement()
         if (tokenList[tokenCounter] != dosym)
         {
             printf("Error: while must be followed by do\n");
+            strcpy(errorMessage, "Error: while must be followed by do");
             errorFlag = 1;
             // output file
             return;
@@ -1109,6 +1121,7 @@ void statement()
         if (tokenList[tokenCounter] != odsym)
         {
             printf("Error: do must be followed by od\n");
+            strcpy(errorMessage, "Error: do must be followed by od");
             errorFlag = 1;
             // output file
             return;
@@ -1123,6 +1136,7 @@ void statement()
         if (tokenList[tokenCounter] != identsym)
         {
             printf("Error: const, var, and read keywords must be followed by identifier\n");
+            strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
             errorFlag = 1;
             // output file
             return;
@@ -1132,6 +1146,7 @@ void statement()
         if (symIndex == -1)
         {
             printf("Error: undeclared identifier\n");
+            strcpy(errorMessage, "Error: undeclared identifier");
             errorFlag = 1;
             // output
             return;
@@ -1140,6 +1155,7 @@ void statement()
         if (symbolTable[symIndex].kind != 2)
         {
             printf("Error: only variable values may be altered\n");
+            strcpy(errorMessage, "Error: only variable values may be altered");
             errorFlag = 1;
             // output
             return;
@@ -1184,6 +1200,7 @@ int varDeclaration()
             if (tokenList[tokenCounter] != identsym)
             {
                 printf("Error: const, var, and read keywords must be followed by identifier");
+                strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
                 errorFlag = 1;
                 return -1;
                 // write to output file
@@ -1195,6 +1212,7 @@ int varDeclaration()
             if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
             {
                 printf("Error: symbol name has already been declared");
+                strcpy(errorMessage, "Error: symbol name has already been declared");
                 errorFlag = 1;
                 return -1;
             }
@@ -1212,6 +1230,7 @@ int varDeclaration()
         if (tokenList[tokenCounter] != semicolonsym)
         {
             printf("Error: constant and variable declarations must be followed by a semicolon");
+            strcpy(errorMessage, "Error: constant and variable declarations must be followed by a semicolon");
             errorFlag = 1;
             // write message to output file
             return -1;
@@ -1236,6 +1255,7 @@ void constDeclaration()
             if (tokenList[tokenCounter] != identsym)
             {
                 printf("Error: const, var, and read keywords must be followed by identifier");
+                strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
                 errorFlag = 1;
                 return;
             }
@@ -1243,6 +1263,7 @@ void constDeclaration()
             if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
             {
                 printf("Error: symbol name has already been declared");
+                strcpy(errorMessage, "Error: symbol name has already been declared");
                 errorFlag = 1;
                 return;
             }
@@ -1254,6 +1275,7 @@ void constDeclaration()
             if (tokenList[tokenCounter] != eqsym)
             {
                 printf("Error: constants must be assigned with =");
+                strcpy(errorMessage, "Error: constants must be assigned with =");
                 errorFlag = 1;
                 return;
             }
@@ -1263,6 +1285,7 @@ void constDeclaration()
             if (tokenList[tokenCounter] != numbersym)
             {
                 printf("Error: constants must be assigned an integer value");
+                strcpy(errorMessage, "Error: constants must be assigned an integer value");
                 errorFlag = 1;
                 return;
             }
@@ -1275,6 +1298,7 @@ void constDeclaration()
         if (tokenList[tokenCounter] != semicolonsym)
         {
             printf("Error: constant and variable declarations must be followed by a semicolon");
+            strcpy(errorMessage, "Error: constant and variable declarations must be followed by a semicolon");
             errorFlag = 1;
             return;
         }
@@ -1330,6 +1354,7 @@ void program()
         {
             errorFlag = 1;
             printf("Error: Scanning error detected by lexer (skipsym present)");
+            strcpy(errorMessage, "Error: Scanning error detected by lexer (skipsym present)");
             return;
         }
     }
@@ -1345,6 +1370,7 @@ void program()
     if (tokenList[tokenCounter] != periodsym)
     {
         printf("Error: program must end with period\n");
+        strcpy(errorMessage, "Error: program must end with period");
         errorFlag = 1;
         return;
     }
@@ -1355,19 +1381,17 @@ void program()
     nameOPcounter++;
 }
 
-void printInst()
+void printInst(FILE *op)
 {
-
     printf("Assembly code:\n");
     printf("+------+-------+---+-----+\n");
     printf("| Line |   OP  | L |  M  |\n");
     printf("+------+-------+---+-----+\n");
     for (int i = 0; i < cx; i++)
     {
-
+        fprintf(op, " %d %d %d \n", instructions[i][0], instructions[i][1], instructions[i][2]);
         printf("|  %d  | %s |  %d  |  %d  |\n", i, nameOP_storage[i], instructions[i][1], instructions[i][2]);
     }
-
     printf("+------+-------+---+-----+\n");
 
     printf("Symbol Table:\n");
@@ -1379,7 +1403,6 @@ void printInst()
     {
         printf("| %d    |     %s       |   %d   |    %d  |    %d    |   %d  |\n", symbolTable[i].kind, symbolTable[i].name, symbolTable[i].val, symbolTable[i].level, symbolTable[i].addr, symbolTable[i].mark);
     }
-
     printf("+------+-------------+-------+-------+---------+------+\n");
 }
 
@@ -1389,19 +1412,25 @@ int main(int argc, char *argv[])
     if (argc == 2)
     {
         FILE *ip = fopen(argv[1], "r");
-        // FILE *op = fopen("elf.txt", "w");
+        FILE *op = fopen("elf.txt", "w");
         scanner(ip);
 
         // llamar program
         program();
         // printf("INSTRUCTION: %s, %d, %d\n", instructions[0].nameOP, instructions[0].L, instructions[0].M);
+        if (errorFlag == 1)
+        {
+            fprintf(op, "%s", errorMessage);
+        }
+
         if (errorFlag == 0)
         {
-            printInst();
+            printInst(op);
         }
 
         // print instructions
         // print symbol table
+        fclose(op);
     }
 
     else
