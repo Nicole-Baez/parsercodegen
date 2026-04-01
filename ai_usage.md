@@ -1,7 +1,7 @@
 # AI Usage Disclosure Details
 
-**Student Name:** Nicole Baez Espinosa
-**Student ID:** 5544379
+**Student Name:** Nicole Baez Espinosa,Lianet Martin
+**Student ID:** 5544379,5636501
 **Assignment:** Homework 3
 
 ---
@@ -258,22 +258,27 @@ Since you're returning -1 directly on any error, you don't need the error flag v
 
 #### Round 4
 
-**Prompt:** [Exact prompt/question]
-**AI Output:** [Summarize or paste the output]
-**Verification/Edits:** [How you verified accuracy or modified the output]
+**Prompt:** 
+var x, y; begin if y <> x then write y fi; write x+ 1; end. but this input is correct, and this is the tokenlist 14 2 0 31 2 1 32 4 6 2 1 24 2 0 8 16 2 1 7 32 16 2 0 19 3 1 32 5 33 it has skipsym; el sexto numero; so intead of / check for skipsym for (int i = 0; i < tokenCount; i++) { if (tokenList[i] == skipsym) { printf("Error: Scanning error detected by lexer (skipsym present)"); return; } } this I need to i+=2 when an identifier
+**AI Output:** 
+No it doesn't have skipsym. Skipsym is token 1 and looking at your token list there is no 1 in there. The numbers are all valid token types. Where are you seeing a skipsym?; The sixth number is 4 which is beginsym, not skipsym. Let me count through the list:
+
+14 — varsym 2 0 — identsym, index 0 (x) 31 — commasym 2 1 — identsym, index 1 (y) 32 — semicolonsym 4 — beginsym
+
+No skipsym anywhere in that list.; Yes! Because if an identifier's name table index happens to be 1, your loop would mistake it for skipsym. So you need to skip the second slot for identsym and numbersym the same way getNextToken does. 
+**Verification/Edits:** 
+Confirmed the bug by printing the index alongside each token value. Fixed the loop by adding i++ when tokenList[i] == identsym || tokenList[i] == numbersym to skip the name table index slot, preventing it from being misread as a token type. Tested with the correct input and confirmed no false scanning error was triggered.
 
 
 
 
 
 ### Learning & Reflection
-
-[Reflect on what you learned and how the AI assistance contributed to your
-understanding]
-[e.g., I learned about proper error handling techniques and improved my debugging
-skills]
-[e.g., Understanding of cryptographic concepts was enhanced through AI
-explanations]
+Working through this assignment with AI assistance helped me develop a deeper understanding of how a compiler pipeline works, from tokenization through parsing and code generation.
+Round 1 taught me that the token list is a flat array where identifiers and numbers always occupy two slots — the token type followed by either a name table index or a numeric value. I had been thinking of the name table as a completely separate structure, but realizing the index is already embedded in the token list made the lookup logic click. I verified this by tracing through the token list manually before implementing.
+Round 2 introduced me to using a struct array for storing instructions with an emit function. Although I chose not to follow the enum suggestion, understanding the struct approach helped me design my own solution that stored the mnemonic name separately alongside the numeric instruction data. This was a design decision I made myself based on what fit my implementation better.
+Round 3 helped me catch a subtle bug where tokenCounter was being incremented too many times inside the var declaration loop, which would cause tokens to be skipped. I also learned the difference between using an error flag with a break versus returning directly — the direct return approach was cleaner and eliminated the need for an extra variable. I verified by tracing through the loop step by step with a sample input.
+Round 4 reinforced how easy it is to introduce false positives when iterating over a mixed-format array. The name table index value of 1 for the second identifier was identical to skipsym, causing a valid program to be rejected. This taught me that any loop over the token list must account for the two-slot structure of identifiers and numbers, not just the parser functions. I confirmed the fix by adding debug output and testing against the known correct input from Appendix C.
 
 ---
 
