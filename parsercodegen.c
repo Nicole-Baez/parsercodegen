@@ -20,6 +20,10 @@ Class: COP 3402 - Systems Software - Spring 2026
 Instructor: Dr. Jie Lin
 Due Date: See Webcourses for the posted due date and time.
 */
+<<<<<<< HEAD
+=======
+// MUSTDO FIX LOGIC FOR >
+>>>>>>> lianet
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -323,8 +327,13 @@ int instructions[MAX_SYMBOL_TABLE_SIZE][3];
 int cx = 0;
 char nameOP_storage[strmax + 1][4] = {""};
 int nameOPcounter = 0;
+<<<<<<< HEAD
 
 int flagError = 0;
+=======
+int errorFlag = 0;
+char errorMessage[100];
+>>>>>>> lianet
 
 // IMPLEMENT LOGIC FOR SAVING NAMES OF INSTRUCTIONS
 
@@ -489,8 +498,11 @@ void scanner(FILE *ip)
             bufferLexeme[i] = '\0';
             ungetc(ch, ip);
 
+<<<<<<< HEAD
             int token = numbersym;
 
+=======
+>>>>>>> lianet
             // If the number is longer than 5 digits
             if (strlen(bufferLexeme) > 5)
             {
@@ -542,6 +554,7 @@ void scanner(FILE *ip)
 
                 ch = fgetc(ip);
 
+<<<<<<< HEAD
                 // Cheks if the next character is also a special symbol
                 if (!((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')))
                 {
@@ -551,6 +564,18 @@ void scanner(FILE *ip)
 
                 // Null terminator
                 bufferLexeme[i + 2] = '\0';
+=======
+                if (ch == '=' || (bufferLexeme[i] == '<' && ch == '>'))
+                {
+                    bufferLexeme[i + 1] = ch;
+                    bufferLexeme[i + 2] = '\0';
+                }
+                else
+                {
+                    ungetc(ch, ip);
+                    bufferLexeme[i + 1] = '\0';
+                }
+>>>>>>> lianet
 
                 int token = mapSpecialSym(bufferLexeme);
 
@@ -669,6 +694,10 @@ void scanner(FILE *ip)
     // printf("lexeme\t\ttoken type\n");
 
     // Prints the name table
+<<<<<<< HEAD
+=======
+    // Prints the token list
+>>>>>>> lianet
 
     // File pointer is closed
     fclose(ip);
@@ -707,6 +736,12 @@ void insertSymbolTable(int kind, char name[12], int val, int level, int address,
     symbolTable[symbolTableCounter].addr = address;
     symbolTable[symbolTableCounter].mark = mark;
 
+<<<<<<< HEAD
+=======
+    // printf("INSERTED IN SYMBOL TABLE:\n");
+    // printf("kind: %d   name: %s    value: %d    address: %d    mark: %d\n", symbolTable[symbolTableCounter].kind, symbolTable[symbolTableCounter].name, symbolTable[symbolTableCounter].val, symbolTable[symbolTableCounter].addr, symbolTable[symbolTableCounter].mark);
+
+>>>>>>> lianet
     symbolTableCounter++;
 }
 
@@ -748,6 +783,11 @@ void expression()
     {
         getNextToken();
         term();
+<<<<<<< HEAD
+=======
+        if (errorFlag == 1)
+            return;
+>>>>>>> lianet
         emit(2, 0, 1);
         strcpy(nameOP_storage[nameOPcounter], "OPR");
         nameOPcounter++;
@@ -755,6 +795,11 @@ void expression()
     else
     {
         term();
+<<<<<<< HEAD
+=======
+        if (errorFlag == 1)
+            return;
+>>>>>>> lianet
     }
     while (tokenList[tokenCounter] == plussym || tokenList[tokenCounter] == minussym)
     {
@@ -762,6 +807,11 @@ void expression()
         {
             getNextToken();
             term();
+<<<<<<< HEAD
+=======
+            if (errorFlag == 1)
+                return;
+>>>>>>> lianet
             emit(2, 0, 2);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -770,6 +820,11 @@ void expression()
         {
             getNextToken();
             term();
+<<<<<<< HEAD
+=======
+            if (errorFlag == 1)
+                return;
+>>>>>>> lianet
             emit(2, 0, 3);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -780,7 +835,11 @@ void expression()
 // condition
 void condition()
 {
+<<<<<<< HEAD
 
+=======
+    // printf("HERE IN CONDITION\n");
+>>>>>>> lianet
     expression();
     if (tokenList[tokenCounter] == eqsym)
     {
@@ -838,8 +897,14 @@ void condition()
     }
     else
     {
+<<<<<<< HEAD
         printf("Error: condition must contain comparison operator\n");
         flagError = 1;
+=======
+        printf("Error: condition must contain comparison operator");
+        strcpy(errorMessage, "Error: condition must contain comparison operator");
+        errorFlag = 1;
+>>>>>>> lianet
         return;
     }
 }
@@ -858,6 +923,7 @@ void factor()
 
         symIdx = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
 
+<<<<<<< HEAD
         if (symIdx == -1 && !flagError)
         {
 
@@ -867,6 +933,18 @@ void factor()
         }
         // if it is a constant give instruction LIT
         if (symbolTable[symIdx].kind == 1 && !flagError)
+=======
+        if (symIdx == -1)
+        {
+
+            printf("Error: undeclared identifier");
+            strcpy(errorMessage, "Error: undeclared identifier");
+            errorFlag = 1;
+            return;
+        }
+        // if it is a constant give instruction LIT
+        if (symbolTable[symIdx].kind == 1)
+>>>>>>> lianet
         {
             emit(1, 0, symbolTable[symIdx].val);
             strcpy(nameOP_storage[nameOPcounter], "LIT");
@@ -896,11 +974,20 @@ void factor()
         getNextToken();
         expression();
 
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != rparentsym && !flagError)
         {
 
             printf("Error: right parenthesis must follow left parenthesis\n");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != rparentsym)
+        {
+
+            printf("Error: right parenthesis must follow left parenthesis\n");
+            strcpy(errorMessage, "Error: right parenthesis must follow left parenthesis");
+            errorFlag = 1;
+>>>>>>> lianet
             return;
         }
 
@@ -909,7 +996,12 @@ void factor()
     else
     {
         printf("Error: arithmetic equations must contain operands, parentheses, numbers, or symbols\n");
+<<<<<<< HEAD
         flagError = 1;
+=======
+        strcpy(errorMessage, "Error: arithmetic equations must contain operands, parentheses, numbers, or symbols");
+        errorFlag = 1;
+>>>>>>> lianet
         return;
     }
 }
@@ -919,6 +1011,11 @@ void term()
 {
     // printf("HERE IN TERM\n");
     factor();
+<<<<<<< HEAD
+=======
+    if (errorFlag == 1)
+        return;
+>>>>>>> lianet
 
     while (tokenList[tokenCounter] == multsym || tokenList[tokenCounter] == slashsym)
     {
@@ -928,6 +1025,11 @@ void term()
 
             getNextToken();
             factor();
+<<<<<<< HEAD
+=======
+            if (errorFlag == 1)
+                return;
+>>>>>>> lianet
             emit(2, 0, 4);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -937,6 +1039,11 @@ void term()
 
             getNextToken();
             factor();
+<<<<<<< HEAD
+=======
+            if (errorFlag == 1)
+                return;
+>>>>>>> lianet
             emit(2, 0, 5);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
@@ -952,28 +1059,52 @@ void statement()
     if (tokenList[tokenCounter] == identsym)
     {
         int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
+<<<<<<< HEAD
         if (symIndex == -1 && !flagError)
         {
             printf("Error: undeclared identifier\n");
             flagError = 1;
+=======
+        if (symIndex == -1)
+        {
+            printf("Error: undeclared identifier\n");
+            strcpy(errorMessage, "Error: undeclared identifier");
+            errorFlag = 1;
+>>>>>>> lianet
             // write to output file
             return;
         }
 
+<<<<<<< HEAD
         if (symbolTable[symIndex].kind != 2 && !flagError)
         {
             printf("Error: only variable values may be altered\n");
             flagError = 1;
+=======
+        if (symbolTable[symIndex].kind != 2)
+        {
+            printf("Error: only variable values may be altered\n");
+            strcpy(errorMessage, "Error: only variable values may be altered");
+            errorFlag = 1;
+>>>>>>> lianet
             // write to output file
             return;
         }
 
         getNextToken();
 
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != becomessym && !flagError)
         {
             printf("Error: assignment statements must use :=\n");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != becomessym)
+        {
+            printf("Error: assignment statements must use :=\n");
+            strcpy(errorMessage, "Error: assignment statements must use :=");
+            errorFlag = 1;
+>>>>>>> lianet
             // output file
             // write to output file
             return;
@@ -984,6 +1115,11 @@ void statement()
         // call expression
 
         expression();
+<<<<<<< HEAD
+=======
+        if (errorFlag == 1)
+            return;
+>>>>>>> lianet
         emit(4, 0, symbolTable[symIndex].addr);
         strcpy(nameOP_storage[nameOPcounter], "STO");
         nameOPcounter++;
@@ -994,6 +1130,11 @@ void statement()
     {
         getNextToken();
         statement();
+<<<<<<< HEAD
+=======
+        if (errorFlag == 1)
+            return;
+>>>>>>> lianet
 
         while (tokenList[tokenCounter] == semicolonsym)
         {
@@ -1001,10 +1142,18 @@ void statement()
             statement();
         }
 
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != endsym && !flagError)
         {
             printf("Error: begin must be followed by end\n");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != endsym)
+        {
+            printf("Error: begin must be followed by end\n");
+            strcpy(errorMessage, "Error: begin must be followed by end");
+            errorFlag = 1;
+>>>>>>> lianet
             // output to file
             return;
         }
@@ -1023,10 +1172,18 @@ void statement()
         strcpy(nameOP_storage[nameOPcounter], "JPC");
         nameOPcounter++;
 
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != thensym && !flagError)
         {
             printf("Error: if must be followed by then\n");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != thensym)
+        {
+            printf("Error: if must be followed by then\n");
+            strcpy(errorMessage, "Error: if must be followed by then");
+            errorFlag = 1;
+>>>>>>> lianet
             // output file
             return;
         }
@@ -1042,10 +1199,18 @@ void statement()
             statement();
         }
 
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != fisym && !flagError)
         {
             printf("Error: if-then statement must end with fi\n");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != fisym)
+        {
+            printf("Error: if-then statement must end with fi\n");
+            strcpy(errorMessage, "Error: if-then statement must end with fi");
+            errorFlag = 1;
+>>>>>>> lianet
             // output file
             return;
         }
@@ -1058,11 +1223,22 @@ void statement()
         getNextToken();
         int loopIndex = cx * 3;
         condition();
+<<<<<<< HEAD
 
         if (tokenList[tokenCounter] != dosym && !flagError)
         {
             printf("Error: while must be followed by do\n");
             flagError = 1;
+=======
+        if (errorFlag == 1)
+            return;
+
+        if (tokenList[tokenCounter] != dosym)
+        {
+            printf("Error: while must be followed by do\n");
+            strcpy(errorMessage, "Error: while must be followed by do");
+            errorFlag = 1;
+>>>>>>> lianet
             // output file
             return;
         }
@@ -1075,16 +1251,29 @@ void statement()
         nameOPcounter++;
 
         statement();
+<<<<<<< HEAD
+=======
+        if (errorFlag == 1)
+            return;
+>>>>>>> lianet
         emit(7, 0, loopIndex);
         strcpy(nameOP_storage[nameOPcounter], "JMP");
         nameOPcounter++;
 
         instructions[jpcIndex][2] = cx;
 
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != odsym && !flagError)
         {
             printf("Error: do must be followed by od\n");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != odsym)
+        {
+            printf("Error: do must be followed by od\n");
+            strcpy(errorMessage, "Error: do must be followed by od");
+            errorFlag = 1;
+>>>>>>> lianet
             // output file
             return;
         }
@@ -1095,27 +1284,51 @@ void statement()
     if (tokenList[tokenCounter] == readsym)
     {
         getNextToken();
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != identsym && !flagError)
         {
             printf("Error: const, var, and read keywords must be followed by identifier\n");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != identsym)
+        {
+            printf("Error: const, var, and read keywords must be followed by identifier\n");
+            strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
+            errorFlag = 1;
+>>>>>>> lianet
             // output file
             return;
         }
 
         int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
+<<<<<<< HEAD
         if (symIndex == -1 && !flagError)
         {
             printf("Error: undeclared identifier\n");
             flagError = 1;
+=======
+        if (symIndex == -1)
+        {
+            printf("Error: undeclared identifier\n");
+            strcpy(errorMessage, "Error: undeclared identifier");
+            errorFlag = 1;
+>>>>>>> lianet
             // output
             return;
         }
 
+<<<<<<< HEAD
         if (symbolTable[symIndex].kind != 2 && !flagError)
         {
             printf("Error: only variable values may be altered\n");
             flagError = 1;
+=======
+        if (symbolTable[symIndex].kind != 2)
+        {
+            printf("Error: only variable values may be altered\n");
+            strcpy(errorMessage, "Error: only variable values may be altered");
+            errorFlag = 1;
+>>>>>>> lianet
             // output
             return;
         }
@@ -1145,17 +1358,25 @@ void statement()
 int varDeclaration()
 {
     int numVars = 0;
+<<<<<<< HEAD
+=======
+    // printf("HERE IN VARDECLARATION\n");
+>>>>>>> lianet
 
     char identName[12];
 
     if (tokenList[tokenCounter] == varsym)
     {
+<<<<<<< HEAD
 
+=======
+>>>>>>> lianet
         do
         {
 
             getNextToken();
 
+<<<<<<< HEAD
             if (tokenList[tokenCounter] == skipsym && !flagError)
             {
                 printf("Error: Scanning error detected by lexer (skipsym present)\n");
@@ -1167,15 +1388,33 @@ int varDeclaration()
             {
                 printf("Error: const, var, and read keywords must be followed by identifier\n");
                 flagError = 1;
+=======
+            if (tokenList[tokenCounter] != identsym)
+            {
+                printf("Error: const, var, and read keywords must be followed by identifier");
+                strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
+                errorFlag = 1;
+>>>>>>> lianet
                 return -1;
                 // write to output file
             }
 
+<<<<<<< HEAD
             // checks duplicates
             if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1 && !flagError)
             {
                 printf("Error: symbol name has already been declared");
                 flagError = 1;
+=======
+            // printf("Name table variable: %s", nameTable[tokenList[tokenCounter + 1]]);
+
+            // checks duplicates
+            if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
+            {
+                printf("Error: symbol name has already been declared");
+                strcpy(errorMessage, "Error: symbol name has already been declared");
+                errorFlag = 1;
+>>>>>>> lianet
                 return -1;
             }
 
@@ -1189,10 +1428,18 @@ int varDeclaration()
 
         } while (tokenList[tokenCounter] == commasym);
 
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != semicolonsym && !flagError)
         {
             printf("Error: constant and variable declarations must be followed by a semicolon");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != semicolonsym)
+        {
+            printf("Error: constant and variable declarations must be followed by a semicolon");
+            strcpy(errorMessage, "Error: constant and variable declarations must be followed by a semicolon");
+            errorFlag = 1;
+>>>>>>> lianet
             // write message to output file
             return -1;
         }
@@ -1206,6 +1453,7 @@ int varDeclaration()
 // const-declatation
 void constDeclaration()
 {
+<<<<<<< HEAD
 
     char identName[12];
     if (tokenList[tokenCounter] == constsym)
@@ -1232,6 +1480,28 @@ void constDeclaration()
             {
                 printf("Error: symbol name has already been declared");
                 flagError = 1;
+=======
+    // printf("HERE IN CONSTDECLARATION\n");
+    char identName[12];
+    if (tokenList[tokenCounter] == constsym)
+    {
+        do
+        {
+            getNextToken();
+            if (tokenList[tokenCounter] != identsym)
+            {
+                printf("Error: const, var, and read keywords must be followed by identifier");
+                strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
+                errorFlag = 1;
+                return;
+            }
+
+            if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
+            {
+                printf("Error: symbol name has already been declared");
+                strcpy(errorMessage, "Error: symbol name has already been declared");
+                errorFlag = 1;
+>>>>>>> lianet
                 return;
             }
 
@@ -1239,19 +1509,35 @@ void constDeclaration()
 
             getNextToken();
 
+<<<<<<< HEAD
             if (tokenList[tokenCounter] != eqsym && !flagError)
             {
                 printf("Error: constants must be assigned with =");
                 flagError = 1;
+=======
+            if (tokenList[tokenCounter] != eqsym)
+            {
+                printf("Error: constants must be assigned with =");
+                strcpy(errorMessage, "Error: constants must be assigned with =");
+                errorFlag = 1;
+>>>>>>> lianet
                 return;
             }
 
             getNextToken();
 
+<<<<<<< HEAD
             if (tokenList[tokenCounter] != numbersym && !flagError)
             {
                 printf("Error: constants must be assigned an integer value");
                 flagError = 1;
+=======
+            if (tokenList[tokenCounter] != numbersym)
+            {
+                printf("Error: constants must be assigned an integer value");
+                strcpy(errorMessage, "Error: constants must be assigned an integer value");
+                errorFlag = 1;
+>>>>>>> lianet
                 return;
             }
 
@@ -1260,10 +1546,18 @@ void constDeclaration()
             getNextToken();
 
         } while (tokenList[tokenCounter] == commasym);
+<<<<<<< HEAD
         if (tokenList[tokenCounter] != semicolonsym && !flagError)
         {
             printf("Error: constant and variable declarations must be followed by a semicolon");
             flagError = 1;
+=======
+        if (tokenList[tokenCounter] != semicolonsym)
+        {
+            printf("Error: constant and variable declarations must be followed by a semicolon");
+            strcpy(errorMessage, "Error: constant and variable declarations must be followed by a semicolon");
+            errorFlag = 1;
+>>>>>>> lianet
             return;
         }
         getNextToken();
@@ -1274,11 +1568,24 @@ void constDeclaration()
 void block()
 {
 
+<<<<<<< HEAD
     constDeclaration();
+=======
+    // printf("\nHERE IN BLOCK\n");
+    constDeclaration();
+    if (errorFlag == 1)
+    {
+        return;
+    }
+>>>>>>> lianet
     int numVars = varDeclaration();
 
     if (numVars == -1)
     {
+<<<<<<< HEAD
+=======
+        errorFlag = 1;
+>>>>>>> lianet
         return; // si detecta un error no se emite la instruccion
     }
     emit(6, 0, numVars + 3);
@@ -1286,6 +1593,13 @@ void block()
     nameOPcounter++;
 
     statement();
+<<<<<<< HEAD
+=======
+    if (errorFlag == 1)
+    {
+        return;
+    }
+>>>>>>> lianet
 
     // setting mark to 1
     for (int i = 0; i < symbolTableCounter; i++)
@@ -1297,6 +1611,7 @@ void block()
 // program
 void program()
 {
+<<<<<<< HEAD
 
     block();
 
@@ -1304,6 +1619,37 @@ void program()
     {
         printf("Error: program must end with period");
         flagError = 1;
+=======
+    for (int i = 0; i < tokenCount; i++)
+    {
+        if (tokenList[i] == identsym || tokenList[i] == numbersym)
+        {
+            i++;
+            continue;
+        }
+        if (tokenList[i] == skipsym)
+        {
+            errorFlag = 1;
+            printf("Error: Scanning error detected by lexer (skipsym present)");
+            strcpy(errorMessage, "Error: Scanning error detected by lexer (skipsym present)");
+            return;
+        }
+    }
+
+    // call block
+    // printf("HERE IN PROGRAM\n");
+    block();
+    if (errorFlag == 1)
+    {
+        return;
+    }
+
+    if (tokenList[tokenCounter] != periodsym)
+    {
+        printf("Error: program must end with period\n");
+        strcpy(errorMessage, "Error: program must end with period");
+        errorFlag = 1;
+>>>>>>> lianet
         return;
     }
 
@@ -1313,19 +1659,30 @@ void program()
     nameOPcounter++;
 }
 
+<<<<<<< HEAD
 void printInst()
 {
 
+=======
+void printInst(FILE *op)
+{
+>>>>>>> lianet
     printf("Assembly code:\n");
     printf("+------+-------+---+-----+\n");
     printf("| Line |   OP  | L |  M  |\n");
     printf("+------+-------+---+-----+\n");
     for (int i = 0; i < cx; i++)
     {
+<<<<<<< HEAD
 
         printf("|  %d  | %s |  %d  |  %d  |\n", i, nameOP_storage[i], instructions[i][1], instructions[i][2]);
     }
 
+=======
+        fprintf(op, " %d %d %d \n", instructions[i][0], instructions[i][1], instructions[i][2]);
+        printf("|  %d  | %s |  %d  |  %d  |\n", i, nameOP_storage[i], instructions[i][1], instructions[i][2]);
+    }
+>>>>>>> lianet
     printf("+------+-------+---+-----+\n");
 
     printf("Symbol Table:\n");
@@ -1337,7 +1694,10 @@ void printInst()
     {
         printf("| %d    |     %s       |   %d   |    %d  |    %d    |   %d  |\n", symbolTable[i].kind, symbolTable[i].name, symbolTable[i].val, symbolTable[i].level, symbolTable[i].addr, symbolTable[i].mark);
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> lianet
     printf("+------+-------------+-------+-------+---------+------+\n");
 }
 
@@ -1347,20 +1707,39 @@ int main(int argc, char *argv[])
     if (argc == 2)
     {
         FILE *ip = fopen(argv[1], "r");
+<<<<<<< HEAD
         // FILE *op = fopen("elf.txt", "w");
+=======
+        FILE *op = fopen("elf.txt", "w");
+>>>>>>> lianet
         scanner(ip);
 
         // llamar program
         program();
         // printf("INSTRUCTION: %s, %d, %d\n", instructions[0].nameOP, instructions[0].L, instructions[0].M);
+<<<<<<< HEAD
 
         if (!flagError)
         {
             printInst();
+=======
+        if (errorFlag == 1)
+        {
+            fprintf(op, "%s", errorMessage);
+        }
+
+        if (errorFlag == 0)
+        {
+            printInst(op);
+>>>>>>> lianet
         }
 
         // print instructions
         // print symbol table
+<<<<<<< HEAD
+=======
+        fclose(op);
+>>>>>>> lianet
     }
 
     else

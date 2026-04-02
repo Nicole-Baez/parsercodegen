@@ -1,0 +1,2 @@
+var x; begin if x then write x fi end.
+

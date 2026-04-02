@@ -1,0 +1,1 @@
+Error: Scanning error detected by lexer (skipsym present)

@@ -1,0 +1,6 @@
+var x;
+begin
+while x>0
+begin
+end
+end.

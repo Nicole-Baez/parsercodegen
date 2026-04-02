@@ -1,0 +1,7 @@
+var x, y;
+begin
+  x := 5;
+  if x <> y then
+    write x;
+  fi
+end.
