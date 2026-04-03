@@ -1,0 +1,5 @@
+const m = 5;
+var x;
+begin
+    x := m / 0
+end.

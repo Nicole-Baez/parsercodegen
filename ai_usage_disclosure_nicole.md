@@ -457,6 +457,103 @@ Variable declared but never used (tracked via symbol table flag)
 These fill natural gaps in what your current errors already cover.
 **Verification/Edits:** I implemented the empty begin end block error in my code and an empty file error in my code as part of custom errors. I tested every test case after implenting these new ones to ensure the logic remained unaffected.
 
+#### Round 1
+
+**Prompt:** // Term
+void term()
+{
+
+    factor(); //Factor is called
+    if (errorFlag == 1)
+        return;
+
+    //Loop checks for multiplication or division symbol
+    while (tokenList[tokenCounter] == multsym || tokenList[tokenCounter] == slashsym)
+    {
+
+        //If token is a multiplication symbol, then factor is called and MULT instruction is emitted
+        if (tokenList[tokenCounter] == multsym)
+        {
+
+            getNextToken();
+            factor();
+            if (errorFlag == 1)
+                return;
+            emit(2, 0, 4);
+            strcpy(nameOP_storage[nameOPcounter], "OPR");
+            nameOPcounter++;
+        }
+        //Division symbol is emitted
+        else
+        {
+
+            getNextToken();
+
+            //Custom check for division by 0
+            if(tokenList[tokenCounter] == 0)
+            {
+                printf("Error: division by 0");
+                strcpy(errorMessage, "Error: division by 0");
+                errorFlag = 1;
+                return;
+            }
+
+            factor();
+            if (errorFlag == 1)
+                return;
+            emit(2, 0, 5);
+            strcpy(nameOP_storage[nameOPcounter], "OPR");
+            nameOPcounter++;
+        }
+    }
+
+}
+This is how I edited my term function to try to catch the division by 0 error but this is the output I get. Assembly code:
++------+-------+---+-----+
+| Line | OP | L | M |
++------+-------+---+-----+
+| 0 | INC | 0 | 4 |
+| 1 | LIT | 0 | 5 |
+| 2 | LIT | 0 | 0 |
+| 3 | OPR | 0 | 5 |
+| 4 | STO | 0 | 3 |
+| 5 | SYS | 0 | 3 |
++------+-------+---+-----+
+Symbol Table:
++------+-------------+-------+-------+---------+------+
+| Kind | Name | Value | Level | Address | Mark |
++------+-------------+-------+-------+---------+------+
+| 1 | m | 5 | 0 | 0 | 1 |
+| 2 | x | 0 | 0 | 3 | 1 |
++------+-------------+-------+-------+---------+------+
+**AI Output:** The problem is your check:
+cif(tokenList[tokenCounter] == 0)
+This is checking if the token type is 0, not if the value is the number zero. By the time you're in term(), you're working with token codes (like numbersym, identsym, etc.), not the actual numeric values.
+You need to check the actual number value from your number list/array. It should be something like:
+celse
+{
+getNextToken();
+
+    if(tokenList[tokenCounter] == numbersym && numberList[tokenCounter] == 0)
+    {
+        printf("Error: division by 0");
+        strcpy(errorMessage, "Error: division by 0");
+        errorFlag = 1;
+        return;
+    }
+
+    factor();
+    ...
+
+}
+The exact array name depends on how your lexer stores literal values — it might be numberList, valueList, tokenValue, etc. The key point is you need two conditions:
+
+The current token is a number literal (numbersym)
+That number's actual value is 0
+
+Without condition 1, you might accidentally match something that isn't a number at all but happens to have token code 0.
+**Verification/Edits:** This response helped me remember that numbers are declared with the token 3 before the actual number is placed in the tokenlist. Instead of doing what the AI suggested, I tweaked the statement slightly by doing if(tokenList[tokenCounter] == numbersym && tokenList[tokenCounter + 1] == 0).
+
 ### Learning & Reflection
 
 AI was mostly useful with debugging. It encouraged me to place debugging print statements throughout my code that I felt were very helpful in terms of visualizing each function. However, I found that AI was not optimal for conceptual questions as it often focused on the coding details rather than the big picture. For instance, it could not examine different approaches that would produce different instruction fields and it kept repeating the same answer.

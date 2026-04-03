@@ -932,6 +932,16 @@ void term()
         {
 
             getNextToken();
+
+            //Custom check for division by 0
+            if(tokenList[tokenCounter] == numbersym && tokenList[tokenCounter + 1] == 0)
+            {
+                printf("Error: division by 0");
+                strcpy(errorMessage, "Error: division by 0");
+                errorFlag = 1;
+                return;
+            }
+
             factor();
             if (errorFlag == 1)
                 return;
@@ -972,7 +982,7 @@ void statement()
         //Checks for :=
         if (tokenList[tokenCounter] != becomessym)
         {
-            printf("Error: assignment statements must use :=\n");
+            printf("Error: assignment statements must use :=");
             strcpy(errorMessage, "Error: assignment statements must use :=");
             errorFlag = 1;
    
@@ -1089,7 +1099,7 @@ void statement()
         //Checks for do keyword
         if (tokenList[tokenCounter] != dosym)
         {
-            printf("Error: while must be followed by do\n");
+            printf("Error: while must be followed by do");
             strcpy(errorMessage, "Error: while must be followed by do");
             errorFlag = 1;
             return;
@@ -1116,7 +1126,7 @@ void statement()
         //Checks for od reserved word
         if (tokenList[tokenCounter] != odsym)
         {
-            printf("Error: do must be followed by od\n");
+            printf("Error: do must be followed by od");
             strcpy(errorMessage, "Error: do must be followed by od");
             errorFlag = 1;
             return;
@@ -1132,7 +1142,7 @@ void statement()
         //If following token is not an identifier, an error message is triggered
         if (tokenList[tokenCounter] != identsym)
         {
-            printf("Error: const, var, and read keywords must be followed by identifier\n");
+            printf("Error: const, var, and read keywords must be followed by identifier");
             strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
             errorFlag = 1;
             return;

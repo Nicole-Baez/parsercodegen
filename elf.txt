@@ -1,1 +1,1 @@
-Error: empty begin/end block
+Error: assignment statements must use :=
