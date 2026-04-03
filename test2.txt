@@ -1,5 +1,6 @@
-const z = 5;
-var xcjioasunihujacioj, y;
+var sjdfnesjekfzxefeos = 4, x = 3;
 begin
-    xcjioasunihujacioj := y * 2;
+    if sjdfnesjekfzxefeo = 4 then
+        sjdfnesjekfzxefeo = x + 4
+    fi;
 end.

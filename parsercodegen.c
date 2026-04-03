@@ -20,7 +20,7 @@ Class: COP 3402 - Systems Software - Spring 2026
 Instructor: Dr. Jie Lin
 Due Date: See Webcourses for the posted due date and time.
 */
-// MUSTDO FIX LOGIC FOR >
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,14 +83,6 @@ typedef struct
 // Global symbol table
 symbol symbolTable[MAX_SYMBOL_TABLE_SIZE];
 
-typedef struct
-{
-    char nameOP[4];
-    int numOP;
-    int L;
-    int M;
-
-} instruction;
 
 // This function maps the reserved word
 TokenType mapReservedWordAndIdentifier(char *str)
@@ -313,23 +305,23 @@ TokenType reservedOrIdentifier(char buffer[], int bufferLength, char *reservedWo
 }
 
 // Token list is global and can be accessed by the main function
-int tokenList[strmax + 1] = {0}; // to store all the tokens
-int tokenCount = 0;              // Counter to keep track of the token list
-int tokenCounter = 0;
+int tokenList[strmax + 1] = {0}; // To store all the tokens
+int tokenCount = 0;              // Counter to keep track of the token list, also stores the total number of tokens
+int tokenCounter = 0;   //helpful for fetching tokens from the tokenlist
 char *nameTable[strmax + 1] = {""}; // Array to store the name table
-int nameTableLength = 0;
-int symbolTableCounter = 0;
+int nameTableLength = 0; //Keeps track of the name table length
+int symbolTableCounter = 0; //Keeps track the items added to the symbol table
 
-int instructions[MAX_SYMBOL_TABLE_SIZE][3];
-int cx = 0;
-char nameOP_storage[strmax + 1][4] = {""};
-int nameOPcounter = 0;
-int errorFlag = 0;
-char errorMessage[100];
 
-// IMPLEMENT LOGIC FOR SAVING NAMES OF INSTRUCTIONS
+int instructions[MAX_SYMBOL_TABLE_SIZE][3]; //Stores the instructions in a 2D table
+int cx = 0; //Keeps track of the instructions being added to the 2D array
+char nameOP_storage[strmax + 1][4] = {""}; //Stores the names of the OP code instructions
+int nameOPcounter = 0; //Keeps track of the OP code names
+int errorFlag = 0;  //Global flag that turns on whenever an error occurs
+char errorMessage[100]; //Stores error messages
 
-// function prototypes
+
+// Function prototypes
 void program();
 void block();
 void constDeclaration();
@@ -339,7 +331,9 @@ void expression();
 void condition();
 void term();
 void factor();
+int symbolTableCheck(char identName[12]);
 void insertSymbolTable(int kind, char name[12], int val, int level, int address, int mark);
+void printInst(FILE *op);
 
 // Function that checks for escape sequences (Scanner was turned into an internal module)
 void scanner(FILE *ip)
@@ -354,20 +348,14 @@ void scanner(FILE *ip)
     // Array to store the lexemes (for printing purposes)
     char *lexemes[strmax + 1] = {""};
 
-    // Array for Error Messages
-    char *errorMessages[] = {"Identifier too long", "Number too long", "Invalid symbol"};
-
-    // Array for collecting error messages
-    char *errorCollect[strmax + 1];
 
     // Used to read each char
     char ch;
 
-    // printf("Source Program:\n\n");
 
     int i = 0;           // Counter to keep track of the buffer
     int lexLength = 0;   // Counter to keep track of the lexemes array
-    int errorMesNum = 0; // Counter to keep track of the error messages throughout the code
+
 
     // While true
     while (1)
@@ -382,8 +370,7 @@ void scanner(FILE *ip)
             break;
         }
 
-        // Char is printed
-        // putchar(ch);
+        
 
         // Checks if char is a letter or a number
         if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'))
@@ -395,8 +382,7 @@ void scanner(FILE *ip)
             */
             while ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9'))
             {
-                // Char is printed
-                // putchar(ch);
+               
 
                 // Chars are added to the buffer until a non letter and non number character is reached
                 bufferLexeme[i] = ch;
@@ -430,9 +416,6 @@ void scanner(FILE *ip)
                     nameTable[nameTableLength - 1] = NULL;
                     nameTableLength--; // Name table index is decreased
 
-                    // Add error and skipsym
-                    errorCollect[errorMesNum] = errorMessages[0]; // "Identifier too long"
-                    errorMesNum++;
 
                     tokenList[tokenCount] = skipsym;
                     tokenCount++;
@@ -475,12 +458,11 @@ void scanner(FILE *ip)
         else if (ch >= '0' && ch <= '9')
         {
             i = 0;
-            // bufferLexeme[i] = ch;
 
             // Checks if the next character is also a number
             while (ch >= '0' && ch <= '9')
             {
-                // putchar(ch);
+                
                 bufferLexeme[i] = ch;
                 ch = fgetc(ip);
                 i++;
@@ -493,10 +475,7 @@ void scanner(FILE *ip)
             // If the number is longer than 5 digits
             if (strlen(bufferLexeme) > 5)
             {
-                // Collect error message
-                errorCollect[errorMesNum] = errorMessages[1]; // "Number too long"
-                errorMesNum++;
-
+      
                 // Add skipsym to the token list
                 tokenList[tokenCount] = skipsym;
                 tokenCount++;
@@ -529,9 +508,9 @@ void scanner(FILE *ip)
         }
 
         // If it is not a letter or a number, it could be a special symbol
-        else // if (!((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9')))
+        else 
         {
-            // putchar(ch);
+            
             i = 0;
             bufferLexeme[i] = ch;
 
@@ -566,12 +545,6 @@ void scanner(FILE *ip)
                     strcpy(lexemes[lexLength], bufferLexeme);
                     lexLength++;
 
-                    // If it is an invalid symbol, token is collected
-                    if (token == skipsym)
-                    {
-                        errorCollect[errorMesNum] = errorMessages[2]; // "Invalid Symbol"
-                        errorMesNum++;
-                    }
 
                     // Clear the buffer
                     bufferLexeme[0] = '\0';
@@ -584,7 +557,7 @@ void scanner(FILE *ip)
             if (ch == '/')
             {
                 ch = fgetc(ip);
-                // putchar(ch);
+               
 
                 // Checks if it is a comment
                 if (ch == '*')
@@ -607,12 +580,6 @@ void scanner(FILE *ip)
                     tokenList[tokenCount] = token;
                     tokenCount++;
 
-                    // If the token is a skipsym, error message is collected
-                    if (token == skipsym)
-                    {
-                        errorCollect[errorMesNum] = errorMessages[2]; // "Invalid Symbol"
-                        errorMesNum++;
-                    }
 
                     // Lexeme is added to the lexeme array
                     lexemes[lexLength] = malloc(strlen(bufferLexeme) + 1);
@@ -641,12 +608,6 @@ void scanner(FILE *ip)
                     tokenList[tokenCount] = token;
                     tokenCount++;
 
-                    // If the token is a skipsym, error message is added
-                    if (token == skipsym)
-                    {
-                        errorCollect[errorMesNum] = errorMessages[2]; // "Invalid Symbol"
-                        errorMesNum++;
-                    }
 
                     // Copies lexeme to the lexeme array
                     lexemes[lexLength] = malloc(strlen(bufferLexeme) + 1);
@@ -662,31 +623,24 @@ void scanner(FILE *ip)
         }
     }
 
-    // Print portion
-    // printf("\n");
 
-    // printf("Lexeme Table:\n\n");
-    // printf("lexeme\t\ttoken type\n");
 
-    // Prints the name table
-    // Prints the token list
-
-    // File pointer is closed
     fclose(ip);
 }
 
 // {} -> loop
 // [] -> if condition
 
-/* FUNCIONES */
 
-// symbol table check
+
+// Look up function: finds the identifier in the symbol table based on name
 int symbolTableCheck(char identName[12])
 {
     int index = -1;
 
     for (int i = 0; i < symbolTableCounter; i++)
     {
+        //If identifier is found, index is returned
         if (strcmp(identName, symbolTable[i].name) == 0)
         {
             index = i;
@@ -694,7 +648,7 @@ int symbolTableCheck(char identName[12])
         }
     }
 
-    // index not found
+    //If index is not found, -1 is returned
     return index;
 }
 
@@ -708,19 +662,18 @@ void insertSymbolTable(int kind, char name[12], int val, int level, int address,
     symbolTable[symbolTableCounter].addr = address;
     symbolTable[symbolTableCounter].mark = mark;
 
-    // printf("INSERTED IN SYMBOL TABLE:\n");
-    // printf("kind: %d   name: %s    value: %d    address: %d    mark: %d\n", symbolTable[symbolTableCounter].kind, symbolTable[symbolTableCounter].name, symbolTable[symbolTableCounter].val, symbolTable[symbolTableCounter].addr, symbolTable[symbolTableCounter].mark);
+    
 
     symbolTableCounter++;
 }
 
-// mark for symbol table
 
-// emit
+
+// Emit function stores instructions in the 2D array
 void emit(int num, int l, int m)
 {
-    // instruction added to the array
-    // strcpy(instructions[cx].nameOP, name);
+    
+  
     instructions[cx][0] = num;
     instructions[cx][1] = l;
     instructions[cx][2] = m;
@@ -743,15 +696,17 @@ void getNextToken()
     }
 }
 
-// expression
+//Expression
 void expression()
 {
-    // printf("HERE IN EXPRESSION\n");
+    
     //"-" at the start means an expression can begin with a negative sign
     if (tokenList[tokenCounter] == minussym)
     {
-        getNextToken();
-        term();
+        getNextToken(); 
+        term(); //Term is called
+
+        //If error is found, function terminates immediately
         if (errorFlag == 1)
             return;
         emit(2, 0, 1);
@@ -760,22 +715,31 @@ void expression()
     }
     else
     {
-        term();
+        term(); //Term is called
         if (errorFlag == 1)
             return;
     }
+
+    //While loop checks for plus or minus sign
     while (tokenList[tokenCounter] == plussym || tokenList[tokenCounter] == minussym)
     {
+        //If token is a plus sign, term is called and error check is done
         if (tokenList[tokenCounter] == plussym)
         {
             getNextToken();
             term();
+
+            //If error is found, function terminates
             if (errorFlag == 1)
                 return;
+
+            //If no errors are found, ADD instruction is emitted
             emit(2, 0, 2);
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
         }
+
+        //Negative sign was found, similar process is repeated for the negative sign
         else
         {
             getNextToken();
@@ -789,11 +753,13 @@ void expression()
     }
 }
 
-// condition
+// Condition
 void condition()
 {
-    // printf("HERE IN CONDITION\n");
-    expression();
+   
+    expression(); //Expression is called
+
+    //Series of if statemetns check for each relational operator, then corresponding instruction is added to the 2D array (emit function)
     if (tokenList[tokenCounter] == eqsym)
     {
 
@@ -848,6 +814,7 @@ void condition()
         strcpy(nameOP_storage[nameOPcounter], "OPR");
         nameOPcounter++;
     }
+    //Otherwise an error was encountered
     else
     {
         printf("Error: condition must contain comparison operator");
@@ -857,20 +824,20 @@ void condition()
     }
 }
 
-// factor
+// Factor
 void factor()
 {
 
-    // printf("HERE IN FACTOR\n");
-
     int symIdx;
 
-    // if identifier check if it was declared
+    // Checks if token is an identifier
     if (tokenList[tokenCounter] == identsym)
     {
 
+        //If so, identifier is added to the name tabke
         symIdx = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
 
+        //If -1 is returned, no corresponding identifier was found
         if (symIdx == -1)
         {
 
@@ -879,7 +846,7 @@ void factor()
             errorFlag = 1;
             return;
         }
-        // if it is a constant give instruction LIT
+        //If 1 is returned, symbol is an identifier and LIT instruction is emitted
         if (symbolTable[symIdx].kind == 1)
         {
             emit(1, 0, symbolTable[symIdx].val);
@@ -889,7 +856,7 @@ void factor()
         else
         {
 
-            // if variable Load it
+            // Identifier is a variable and LOD instruction is emitted
             emit(3, 0, symbolTable[symIdx].addr);
             strcpy(nameOP_storage[nameOPcounter], "LOD");
             nameOPcounter++;
@@ -897,6 +864,8 @@ void factor()
 
         getNextToken();
     }
+
+    //If token is a number, LIT instruction is emitted
     else if (tokenList[tokenCounter] == numbersym)
     {
         emit(1, 0, tokenList[tokenCounter + 1]);
@@ -904,16 +873,19 @@ void factor()
         nameOPcounter++;
         getNextToken();
     }
+
+    //Checks for left parenthesis
     else if (tokenList[tokenCounter] == lparentsym)
     {
 
         getNextToken();
-        expression();
+        expression(); //Expression is called
 
+        //Calls for right parenthesis
         if (tokenList[tokenCounter] != rparentsym)
         {
 
-            printf("Error: right parenthesis must follow left parenthesis\n");
+            printf("Error: right parenthesis must follow left parenthesis");
             strcpy(errorMessage, "Error: right parenthesis must follow left parenthesis");
             errorFlag = 1;
             return;
@@ -921,26 +893,29 @@ void factor()
 
         getNextToken();
     }
+    //An error was found
     else
     {
-        printf("Error: arithmetic equations must contain operands, parentheses, numbers, or symbols\n");
+        printf("Error: arithmetic equations must contain operands, parentheses, numbers, or symbols");
         strcpy(errorMessage, "Error: arithmetic equations must contain operands, parentheses, numbers, or symbols");
         errorFlag = 1;
         return;
     }
 }
 
-// term
+// Term
 void term()
 {
-    // printf("HERE IN TERM\n");
-    factor();
+   
+    factor(); //Factor is called
     if (errorFlag == 1)
         return;
 
+    //Loop checks for multiplication or division symbol
     while (tokenList[tokenCounter] == multsym || tokenList[tokenCounter] == slashsym)
     {
 
+        //If token is a multiplication symbol, then factor is called and MULT instruction is emitted
         if (tokenList[tokenCounter] == multsym)
         {
 
@@ -952,6 +927,7 @@ void term()
             strcpy(nameOP_storage[nameOPcounter], "OPR");
             nameOPcounter++;
         }
+        //Division symbol is emitted
         else
         {
 
@@ -966,49 +942,49 @@ void term()
     }
 }
 
-// statement
+// Statement
 void statement()
 {
-    // printf("HERE IN STATEMENT\n");
-
+    //Checks if token is an identifier
     if (tokenList[tokenCounter] == identsym)
     {
+        //Looks up the identifier in the symbol table
         int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
         if (symIndex == -1)
         {
-            printf("Error: undeclared identifier\n");
+            printf("Error: undeclared identifier");
             strcpy(errorMessage, "Error: undeclared identifier");
             errorFlag = 1;
-            // write to output file
             return;
         }
 
+        //If token is in the symbol table but is not classified as an identifier, an error message is triggered
         if (symbolTable[symIndex].kind != 2)
         {
-            printf("Error: only variable values may be altered\n");
+            printf("Error: only variable values may be altered");
             strcpy(errorMessage, "Error: only variable values may be altered");
             errorFlag = 1;
-            // write to output file
             return;
         }
 
         getNextToken();
 
+        //Checks for :=
         if (tokenList[tokenCounter] != becomessym)
         {
             printf("Error: assignment statements must use :=\n");
             strcpy(errorMessage, "Error: assignment statements must use :=");
             errorFlag = 1;
-            // output file
-            // write to output file
+   
             return;
         }
 
         getNextToken();
 
-        // call expression
+   
 
-        expression();
+        expression(); //Expression is called
+    
         if (errorFlag == 1)
             return;
         emit(4, 0, symbolTable[symIndex].addr);
@@ -1017,25 +993,38 @@ void statement()
         return;
     }
 
+    //Checks if token is the begin keyword
     if (tokenList[tokenCounter] == beginsym)
     {
         getNextToken();
-        statement();
+
+        //Custom error checks for empty begin/end block
+        if(tokenList[tokenCounter] == endsym)
+        {
+
+            printf("Error: empty begin/end block");
+            strcpy(errorMessage, "Error: empty begin/end block");
+            errorFlag = 1;
+            return;
+        }
+
+        statement(); //Statement is called as per the grammar rules
         if (errorFlag == 1)
             return;
 
+        //While loop checks for semicolon
         while (tokenList[tokenCounter] == semicolonsym)
         {
             getNextToken();
-            statement();
+            statement(); //Statement is called inside while loop
         }
 
+        //If there is a begin present, it must be followed by an end keyword. Otherwise there is an error
         if (tokenList[tokenCounter] != endsym)
         {
-            printf("Error: begin must be followed by end\n");
+            printf("Error: begin must be followed by end");
             strcpy(errorMessage, "Error: begin must be followed by end");
             errorFlag = 1;
-            // output to file
             return;
         }
         getNextToken();
@@ -1045,136 +1034,148 @@ void statement()
     if (tokenList[tokenCounter] == ifsym)
     {
         getNextToken();
-        // call condition
+
         condition();
 
+        //Stores the index of the current instruction
         int jpcIndex = cx;
         emit(8, 0, 0);
         strcpy(nameOP_storage[nameOPcounter], "JPC");
         nameOPcounter++;
 
+        //If if keyword is not followed by then, an error message is triggered
         if (tokenList[tokenCounter] != thensym)
         {
-            printf("Error: if must be followed by then\n");
+            printf("Error: if must be followed by then");
             strcpy(errorMessage, "Error: if must be followed by then");
             errorFlag = 1;
-            // output file
             return;
         }
 
         getNextToken();
-        statement();
+        statement(); //Statement is called
 
+        //M is updated with the index of the target instruction (multiplied by 3 because it is a 2D array)
         instructions[jpcIndex][2] = cx * 3;
 
+        //Checks for else keyword
         if (tokenList[tokenCounter] == elsesym)
         {
             getNextToken();
-            statement();
+            statement(); //Statement is called
         }
 
+        //Checks for fi reserved word, if it is not in the token list an error message is produced
         if (tokenList[tokenCounter] != fisym)
         {
-            printf("Error: if-then statement must end with fi\n");
+            printf("Error: if-then statement must end with fi");
             strcpy(errorMessage, "Error: if-then statement must end with fi");
             errorFlag = 1;
-            // output file
             return;
         }
         getNextToken();
         return;
     }
 
+    //Checks for while reserved word
     if (tokenList[tokenCounter] == whilesym)
     {
         getNextToken();
-        int loopIndex = cx * 3;
-        condition();
+        int loopIndex = cx * 3; //Stores the loop index
+        condition(); //Condition is called
         if (errorFlag == 1)
             return;
 
+        //Checks for do keyword
         if (tokenList[tokenCounter] != dosym)
         {
             printf("Error: while must be followed by do\n");
             strcpy(errorMessage, "Error: while must be followed by do");
             errorFlag = 1;
-            // output file
             return;
         }
 
         getNextToken();
 
-        int jpcIndex = cx;
+        int jpcIndex = cx; //JPC index is stored to update the M field of the target instruction
+        //JPC instruction is emitted
         emit(8, 0, 0);
         strcpy(nameOP_storage[nameOPcounter], "JPC");
         nameOPcounter++;
 
-        statement();
+        statement(); //Statement is called
         if (errorFlag == 1)
             return;
+        //JMP instructionis emitted
         emit(7, 0, loopIndex);
         strcpy(nameOP_storage[nameOPcounter], "JMP");
         nameOPcounter++;
 
-        instructions[jpcIndex][2] = cx;
+        instructions[jpcIndex][2] = cx; //Target instruction's M field is updated
 
+        //Checks for od reserved word
         if (tokenList[tokenCounter] != odsym)
         {
             printf("Error: do must be followed by od\n");
             strcpy(errorMessage, "Error: do must be followed by od");
             errorFlag = 1;
-            // output file
             return;
         }
         getNextToken();
         return;
     }
 
+    //Checks for read reserved word
     if (tokenList[tokenCounter] == readsym)
     {
         getNextToken();
+        //If following token is not an identifier, an error message is triggered
         if (tokenList[tokenCounter] != identsym)
         {
             printf("Error: const, var, and read keywords must be followed by identifier\n");
             strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
             errorFlag = 1;
-            // output file
             return;
         }
 
+        //Otherwise, a lookup of the symbol table is done
         int symIndex = symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]);
+        //Checks if identifier was not found
         if (symIndex == -1)
         {
             printf("Error: undeclared identifier\n");
             strcpy(errorMessage, "Error: undeclared identifier");
             errorFlag = 1;
-            // output
             return;
         }
 
+        //Checks if supposed identifier is not stored as kind 2
         if (symbolTable[symIndex].kind != 2)
         {
             printf("Error: only variable values may be altered\n");
             strcpy(errorMessage, "Error: only variable values may be altered");
             errorFlag = 1;
-            // output
             return;
         }
 
         getNextToken();
+        //READ instruction is emitted
         emit(9, 0, 2);
         strcpy(nameOP_storage[nameOPcounter], "SYS");
         nameOPcounter++;
+        //STORE instructionis emitted
         emit(4, 0, symbolTable[symIndex].addr);
         strcpy(nameOP_storage[nameOPcounter], "STO");
         nameOPcounter++;
         return;
     }
 
+    //Checks for write keyword
     if (tokenList[tokenCounter] == writesym)
     {
         getNextToken();
-        expression();
+        expression(); //Expression is called
+        //WRITE instruction is emitted
         emit(9, 0, 1);
         strcpy(nameOP_storage[nameOPcounter], "SYS");
         nameOPcounter++;
@@ -1182,14 +1183,14 @@ void statement()
     }
 }
 
-// var-declaration
+// Var-declaration: returns the number of variables
 int varDeclaration()
 {
     int numVars = 0;
-    // printf("HERE IN VARDECLARATION\n");
 
     char identName[12];
 
+    //Checks for var reserved keyword
     if (tokenList[tokenCounter] == varsym)
     {
         do
@@ -1203,12 +1204,12 @@ int varDeclaration()
                 strcpy(errorMessage, "Error: const, var, and read keywords must be followed by identifier");
                 errorFlag = 1;
                 return -1;
-                // write to output file
+              
             }
 
-            // printf("Name table variable: %s", nameTable[tokenList[tokenCounter + 1]]);
+         
 
-            // checks duplicates
+            // Checks for duplicates in the symbol table
             if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
             {
                 printf("Error: symbol name has already been declared");
@@ -1219,7 +1220,7 @@ int varDeclaration()
 
             strcpy(identName, nameTable[tokenList[tokenCounter + 1]]);
 
-            // adds to symbol table
+            // Identifier is inserted into the symbol table
             insertSymbolTable(2, identName, 0, 0, numVars + 3, 0);
 
             numVars++;
@@ -1227,31 +1228,34 @@ int varDeclaration()
 
         } while (tokenList[tokenCounter] == commasym);
 
+        //Checks for semicolon 
         if (tokenList[tokenCounter] != semicolonsym)
         {
             printf("Error: constant and variable declarations must be followed by a semicolon");
             strcpy(errorMessage, "Error: constant and variable declarations must be followed by a semicolon");
             errorFlag = 1;
-            // write message to output file
             return -1;
         }
 
         getNextToken();
     }
 
+    //Returns the number of variables
     return numVars;
 }
 
-// const-declatation
+// Const-declaration
 void constDeclaration()
 {
-    // printf("HERE IN CONSTDECLARATION\n");
+
     char identName[12];
+    //Checks for const reserved word
     if (tokenList[tokenCounter] == constsym)
     {
         do
         {
             getNextToken();
+            //Checks if token is not an identifier
             if (tokenList[tokenCounter] != identsym)
             {
                 printf("Error: const, var, and read keywords must be followed by identifier");
@@ -1260,6 +1264,7 @@ void constDeclaration()
                 return;
             }
 
+            //Checks for duplicates in name table
             if (symbolTableCheck(nameTable[tokenList[tokenCounter + 1]]) != -1)
             {
                 printf("Error: symbol name has already been declared");
@@ -1272,6 +1277,7 @@ void constDeclaration()
 
             getNextToken();
 
+            //Checks for equal sign
             if (tokenList[tokenCounter] != eqsym)
             {
                 printf("Error: constants must be assigned with =");
@@ -1282,6 +1288,7 @@ void constDeclaration()
 
             getNextToken();
 
+            //Checks if current token is a number
             if (tokenList[tokenCounter] != numbersym)
             {
                 printf("Error: constants must be assigned an integer value");
@@ -1290,11 +1297,12 @@ void constDeclaration()
                 return;
             }
 
-            // add to symbol table
+            // If all previous checks are passed, constant gets inserted into the symbol table
             insertSymbolTable(1, identName, tokenList[tokenCounter + 1], 0, 0, 0);
             getNextToken();
 
-        } while (tokenList[tokenCounter] == commasym);
+        } while (tokenList[tokenCounter] == commasym); // Continues checking in case there are multiple constants declared
+        //Semicolon check
         if (tokenList[tokenCounter] != semicolonsym)
         {
             printf("Error: constant and variable declarations must be followed by a semicolon");
@@ -1306,50 +1314,61 @@ void constDeclaration()
     }
 }
 
-// block
+// Block
 void block()
 {
 
-    // printf("\nHERE IN BLOCK\n");
+    // Checks for constants and adds them to symbol table if successful
     constDeclaration();
     if (errorFlag == 1)
     {
         return;
     }
+
+    //Checks for variables, adds them to symbol table, and returns the number of variables
     int numVars = varDeclaration();
 
+    //Error check
     if (numVars == -1)
     {
         errorFlag = 1;
-        return; // si detecta un error no se emite la instruccion
+        return;
     }
+
+    //INC instruction is emitted if no errors were detected
     emit(6, 0, numVars + 3);
     strcpy(nameOP_storage[nameOPcounter], "INC");
     nameOPcounter++;
 
-    statement();
+    statement(); //Statement is called
+    //Error check
     if (errorFlag == 1)
     {
         return;
     }
 
-    // setting mark to 1
+    // Marking algorithm updates mark to 1 once symbols are no longer used
     for (int i = 0; i < symbolTableCounter; i++)
     {
         symbolTable[i].mark = 1;
     }
 }
 
-// program
+// Program
 void program()
 {
+
+    //Detects skipsym error tokens
     for (int i = 0; i < tokenCount; i++)
     {
+        //If identifier or number symbol is encountered i advances and skips the index or number that follows the tokens (2 1 would be skipped because 1 is an index in this context)
         if (tokenList[i] == identsym || tokenList[i] == numbersym)
         {
             i++;
             continue;
         }
+
+        //Checks for skipsym before any other functions are called
         if (tokenList[i] == skipsym)
         {
             errorFlag = 1;
@@ -1359,46 +1378,64 @@ void program()
         }
     }
 
-    // call block
-    // printf("HERE IN PROGRAM\n");
+    // Block is called
     block();
+
+    //Custom error check verifies whether an input file is empty
+    if(tokenList[0] == 0)
+     {
+         printf("Error: input file is empty");
+         strcpy(errorMessage, "Error: input file is empty");
+         errorFlag = 1;
+         return;
+     }
+
+     //Error check
     if (errorFlag == 1)
     {
         return;
     }
 
+    //Checks for the period at the end of a program
     if (tokenList[tokenCounter] != periodsym)
     {
-        printf("Error: program must end with period\n");
+        printf("Error: program must end with period");
         strcpy(errorMessage, "Error: program must end with period");
         errorFlag = 1;
         return;
     }
 
-    // emit halt,
+    // HALT instruction is emitted
     emit(9, 0, 3);
     strcpy(nameOP_storage[nameOPcounter], "SYS");
     nameOPcounter++;
 }
 
+
+//Function that prints instructions
 void printInst(FILE *op)
 {
+    //Headers
     printf("Assembly code:\n");
     printf("+------+-------+---+-----+\n");
     printf("| Line |   OP  | L |  M  |\n");
     printf("+------+-------+---+-----+\n");
     for (int i = 0; i < cx; i++)
     {
+        //Writes instructions into the output file in the number format (OPcode is a number)
         fprintf(op, " %d %d %d \n", instructions[i][0], instructions[i][1], instructions[i][2]);
-        printf("|  %d  | %s |  %d  |  %d  |\n", i, nameOP_storage[i], instructions[i][1], instructions[i][2]);
+        printf("|  %d  | %s |  %d  |  %d  |\n", i, nameOP_storage[i], instructions[i][1], instructions[i][2]); //Instructions are printed in the terminal with the OPcode instruction name
     }
     printf("+------+-------+---+-----+\n");
 
+
+    //Symbol table header
     printf("Symbol Table:\n");
     printf("+------+-------------+-------+-------+---------+------+\n");
     printf("| Kind |     Name    | Value | Level | Address | Mark |\n");
     printf("+------+-------------+-------+-------+---------+------+\n");
 
+    //Prints symbol table in the terminal
     for (int i = 0; i < symbolTableCounter; i++)
     {
         printf("| %d    |     %s       |   %d   |    %d  |    %d    |   %d  |\n", symbolTable[i].kind, symbolTable[i].name, symbolTable[i].val, symbolTable[i].level, symbolTable[i].addr, symbolTable[i].mark);
@@ -1415,27 +1452,27 @@ int main(int argc, char *argv[])
         FILE *op = fopen("elf.txt", "w");
         scanner(ip);
 
-        // llamar program
+        //Program is called
         program();
-        // printf("INSTRUCTION: %s, %d, %d\n", instructions[0].nameOP, instructions[0].L, instructions[0].M);
+        
+        //If error flag is triggered at any point throughout the code, error is printed to the output file and program is terminated
         if (errorFlag == 1)
         {
             fprintf(op, "%s", errorMessage);
         }
 
+        //Otherwise, instructions are printed
         if (errorFlag == 0)
         {
             printInst(op);
         }
 
-        // print instructions
-        // print symbol table
         fclose(op);
     }
 
     else
     {
-        printf("Wrong number of arguments.\n");
+        printf("Error: Wrong number of arguments.\n");
         printf("Try: ./00_args 123\n");
     }
 
